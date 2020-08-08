@@ -1,18 +1,18 @@
 <?php
 
 use PHPUnit\Framework\TestCase;
-use Proof\ExpiredTokenException;
-use Proof\InvalidTokenException;
-use Proof\Proof;
-use Proof\SignatureMismatchException;
-use Proof\Signer\HmacSigner;
-use Proof\Token;
-use Proof\TokenNotReadyException;
+use Nimbly\Proof\ExpiredTokenException;
+use Nimbly\Proof\InvalidTokenException;
+use Nimbly\Proof\Proof;
+use Nimbly\Proof\SignatureMismatchException;
+use Nimbly\Proof\Signer\HmacSigner;
+use Nimbly\Proof\Token;
+use Nimbly\Proof\TokenNotReadyException;
 
 /**
- * @covers Proof\Proof
- * @covers Proof\Token
- * @covers Proof\Signer\HmacSigner
+ * @covers Nimbly\Proof\Proof
+ * @covers Nimbly\Proof\Token
+ * @covers Nimbly\Proof\Signer\HmacSigner
  */
 class ProofTest extends TestCase
 {

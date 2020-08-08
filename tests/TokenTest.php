@@ -1,10 +1,10 @@
 <?php
 
 use PHPUnit\Framework\TestCase;
-use Proof\Token;
+use Nimbly\Proof\Token;
 
 /**
- * @covers Proof\Token
+ * @covers Nimbly\Proof\Token
  */
 class TokenTest extends TestCase
 {

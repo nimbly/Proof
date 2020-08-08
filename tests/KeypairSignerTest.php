@@ -1,11 +1,11 @@
 <?php
 
 use PHPUnit\Framework\TestCase;
-use Proof\Proof;
-use Proof\Signer\KeypairSigner;
+use Nimbly\Proof\Proof;
+use Nimbly\Proof\Signer\KeypairSigner;
 
 /**
- * @covers Proof\Signer\KeypairSigner
+ * @covers Nimbly\Proof\Signer\KeypairSigner
  */
 class KeypairSignerTest extends TestCase
 {

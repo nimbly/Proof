@@ -1,12 +1,17 @@
 <?php
 
-namespace Proof\Signer;
+namespace Nimbly\Proof\Signer;
 
-use Proof\SignerInterface;
+use Nimbly\Proof\SignerInterface;
 use RuntimeException;
 
 class KeypairSigner implements SignerInterface
 {
+	/**
+	 * Map of supported algorithms.
+	 *
+	 * @var array<string,string>
+	 */
 	private $supported_algorithms = [
 		"SHA256" => "RS256",
 		"SHA384" => "RS384",

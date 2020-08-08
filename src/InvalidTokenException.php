@@ -1,6 +1,6 @@
 <?php
 
-namespace Proof;
+namespace Nimbly\Proof;
 
 use Exception;
 

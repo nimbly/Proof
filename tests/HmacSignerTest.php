@@ -1,11 +1,11 @@
 <?php
 
 use PHPUnit\Framework\TestCase;
-use Proof\Proof;
-use Proof\Signer\HmacSigner;
+use Nimbly\Proof\Proof;
+use Nimbly\Proof\Signer\HmacSigner;
 
 /**
- * @covers Proof\Signer\HmacSigner
+ * @covers Nimbly\Proof\Signer\HmacSigner
  */
 class HmacSignerTest extends TestCase
 {

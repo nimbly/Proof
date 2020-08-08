@@ -1,0 +1,23 @@
+{
+    "name": "nimbly/proof",
+    "description": "JWT implementation",
+    "type": "library",
+    "require-dev": {
+        "phpunit/phpunit": "^9.2",
+        "vimeo/psalm": "^3.12",
+        "symfony/var-dumper": "^5.1"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Brent Scheffler",
+            "email": "brent@brentscheffler.com"
+        }
+    ],
+	"require": {},
+	"autoload": {
+		"psr-4": {
+			"Proof\\": "src\/"
+		}
+	}
+}

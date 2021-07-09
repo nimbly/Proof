@@ -10,7 +10,8 @@
         }
     ],
 	"require": {
-		"php": ">=7.2"
+		"php": ">=7.2",
+        "paragonie/hidden-string": "^2.0"
 	},
 	"autoload": {
 		"psr-4": {

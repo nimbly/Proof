@@ -27,7 +27,7 @@ class KeypairSignerTest extends TestCase
 		);
 	}
 
-	public function test_constructor_sets_public_key_property(): void
+	public function test_constructor_sets_public_key_property_as_hidden_string(): void
 	{
 		$public_key = \file_get_contents(__DIR__ . "/public.pem");
 
@@ -42,11 +42,11 @@ class KeypairSignerTest extends TestCase
 
 		$this->assertEquals(
 			$public_key,
-			$reflectionProperty->getValue($keypairSigner)
+			$reflectionProperty->getValue($keypairSigner)->getString()
 		);
 	}
 
-	public function test_constructor_sets_private_key_property(): void
+	public function test_constructor_sets_private_key_property_as_hidden_string(): void
 	{
 		$private_key = \file_get_contents(__DIR__ . "/private.pem");
 
@@ -62,7 +62,7 @@ class KeypairSignerTest extends TestCase
 
 		$this->assertEquals(
 			$private_key,
-			$reflectionProperty->getValue($keypairSigner)
+			$reflectionProperty->getValue($keypairSigner)->getString()
 		);
 	}
 

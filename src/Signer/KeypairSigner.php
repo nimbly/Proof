@@ -3,6 +3,7 @@
 namespace Nimbly\Proof\Signer;
 
 use Nimbly\Proof\SignerInterface;
+use ParagonIE\HiddenString\HiddenString;
 use RuntimeException;
 
 class KeypairSigner implements SignerInterface
@@ -28,14 +29,14 @@ class KeypairSigner implements SignerInterface
 	/**
 	 * Public key.
 	 *
-	 * @var string
+	 * @var HiddenString|null
 	 */
 	protected $public_key;
 
 	/**
 	 * Private key.
 	 *
-	 * @var string|null
+	 * @var HiddenString|null
 	 */
 	protected $private_key;
 
@@ -48,7 +49,7 @@ class KeypairSigner implements SignerInterface
 	 */
 	public function __construct(
 		string $algorithm,
-		string $public_key,
+		?string $public_key,
 		?string $private_key = null
 	)
 	{
@@ -56,9 +57,19 @@ class KeypairSigner implements SignerInterface
 			throw new RuntimeException("Unsupported algorithm \"{$algorithm}\".");
 		}
 
+		if( empty($public_key) && empty($private_key) ){
+			throw new RuntimeException("A public and/or private key is required.");
+		}
+
 		$this->algorithm = $algorithm;
-		$this->public_key = $public_key;
-		$this->private_key = $private_key;
+
+		if( $public_key ){
+			$this->public_key = new HiddenString($public_key);
+		}
+
+		if( $private_key ){
+			$this->private_key = new HiddenString($private_key);
+		}
 	}
 
 	/**
@@ -91,7 +102,7 @@ class KeypairSigner implements SignerInterface
 		$status = \openssl_sign(
 			$message,
 			$signature,
-			$this->private_key,
+			$this->private_key->getString(),
 			$this->algorithm
 		);
 
@@ -107,10 +118,14 @@ class KeypairSigner implements SignerInterface
 	 */
 	public function verify(string $message, string $signature): bool
 	{
+		if( empty($this->public_key) ){
+			throw new RuntimeException("Cannot verify signature: public key has not been provided.");
+		}
+
 		$status = \openssl_verify(
 			$message,
 			$signature,
-			$this->public_key,
+			$this->public_key->getString(),
 			$this->algorithm
 		);
 

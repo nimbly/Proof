@@ -3,6 +3,7 @@
 namespace Nimbly\Proof\Signer;
 
 use Nimbly\Proof\SignerInterface;
+use ParagonIE\HiddenString\HiddenString;
 use RuntimeException;
 
 class HmacSigner implements SignerInterface
@@ -28,7 +29,7 @@ class HmacSigner implements SignerInterface
 	/**
 	 * The key to use for hashing.
 	 *
-	 * @var string
+	 * @var HiddenString
 	 */
 	protected $key;
 
@@ -48,7 +49,7 @@ class HmacSigner implements SignerInterface
 		}
 
 		$this->algorithm = $algorithm;
-		$this->key = $key;
+		$this->key = new HiddenString($key);
 	}
 
 	/**
@@ -75,7 +76,7 @@ class HmacSigner implements SignerInterface
 		return \hash_hmac(
 			$this->algorithm,
 			$message,
-			$this->key,
+			$this->key->getString(),
 			true
 		);
 	}

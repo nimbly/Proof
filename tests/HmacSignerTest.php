@@ -26,7 +26,7 @@ class HmacSignerTest extends TestCase
 		);
 	}
 
-	public function test_constructor_sets_key_property(): void
+	public function test_constructor_sets_key_property_as_hidden_string(): void
 	{
 		$hmacSigner = new HmacSigner(
 			Proof::ALGO_SHA256,
@@ -39,7 +39,7 @@ class HmacSignerTest extends TestCase
 
 		$this->assertEquals(
 			"supersecretkey",
-			$reflectionProperty->getValue($hmacSigner)
+			$reflectionProperty->getValue($hmacSigner)->getString()
 		);
 	}
 

@@ -112,7 +112,7 @@ The `HmacSigner` uses a shared secret to sign messages and verify signatures. It
 
 ```php
 $hmacSigner = new HmacSigner(
-	Proof::ALGO_256,
+	Proof::ALGO_SHA256,
 	\getenv("jwt_signing_key")
 );
 ```
@@ -123,7 +123,7 @@ The `KeypairSigner` is the preferred signing method as it is more secure than us
 
 ```php
 $keypairSigner = new KeypairSigner(
-	Proof::ALGO_256,
+	Proof::ALGO_SHA256,
 	\getenv("public.pem"),
 	\getenv("private.pem")
 );

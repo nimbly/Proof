@@ -64,7 +64,10 @@ class Proof
 			throw new SignatureMismatchException("Token signature mismatch.");
 		}
 
-		$payload = \json_decode($this->base64_url_decode($payload));
+		/**
+		 * @var object $decoded_payload
+		 */
+		$decoded_payload = \json_decode($this->base64_url_decode($payload));
 
 		if( \json_last_error() !== JSON_ERROR_NONE ){
 			throw new InvalidTokenException("The token payload could not be decoded.");
@@ -72,21 +75,22 @@ class Proof
 
 		$timestamp = \time() + $this->leeway;
 
-		if( isset($payload->exp) &&
-			$payload->exp < $timestamp ){
+		if( isset($decoded_payload->exp) &&
+			$decoded_payload->exp < $timestamp ){
 			throw new ExpiredTokenException("The token has expired.");
 		}
 
-		if( isset($payload->nbf) &&
-			$payload->nbf > $timestamp ){
+		if( isset($decoded_payload->nbf) &&
+			$decoded_payload->nbf > $timestamp ){
 			throw new TokenNotReadyException("The token is not ready to be accepted yet.");
 		}
 
-		return new Token((array) $payload);
+		return new Token((array) $decoded_payload);
 	}
 
 	/**
 	 * Apply a URL safe transform to a base64 encoding.
+	 * Includes stripping of base64 "=" padding.
 	 *
 	 * @param string $string
 	 * @return string
@@ -94,8 +98,8 @@ class Proof
 	private function base64_url_encode(string $string): string
 	{
 		return \str_replace(
-			["/", "+"],
-			["_", "-"],
+			["/", "+", "="],
+			["_", "-", ""],
 			\base64_encode($string)
 		);
 	}
@@ -115,24 +119,5 @@ class Proof
 				$string
 			)
 		);
-	}
-
-	private function decodeHeader(string $header): object
-	{
-		$header = \json_decode($this->base64_url_decode($header));
-
-		if( \json_last_error() !== JSON_ERROR_NONE ){
-			throw new InvalidTokenException("Could not decode token header.");
-		}
-
-		if( !isset($header->algo) ){
-			throw new InvalidTokenException("Token missing algorithm in header.");
-		}
-
-		if( !$this->signer->isAlgorithmSupported($header->algo) ){
-			throw new InvalidTokenException("Token has unsupported algorithm.");
-		}
-
-		return $header;
 	}
 }

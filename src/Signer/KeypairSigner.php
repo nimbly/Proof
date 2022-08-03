@@ -44,7 +44,7 @@ class KeypairSigner implements SignerInterface
 	 * KeypairSigner constructor.
 	 *
 	 * @param string $algorithm Algorithm to use when signing: SHA256, SHA384, SHA512
-	 * @param string $public_key Public key contents.
+	 * @param string|null $public_key Public key contents.
 	 * @param string|null $private_key Private key contents.
 	 */
 	public function __construct(
@@ -62,14 +62,8 @@ class KeypairSigner implements SignerInterface
 		}
 
 		$this->algorithm = $algorithm;
-
-		if( $public_key ){
-			$this->public_key = new HiddenString($public_key);
-		}
-
-		if( $private_key ){
-			$this->private_key = new HiddenString($private_key);
-		}
+		$this->public_key = $public_key ? new HiddenString($public_key) : null;
+		$this->private_key = $private_key ? new HiddenString($private_key) : null;
 	}
 
 	/**

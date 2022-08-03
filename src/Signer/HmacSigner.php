@@ -24,14 +24,14 @@ class HmacSigner implements SignerInterface
 	 *
 	 * @var string
 	 */
-	protected $algorithm;
+	protected string $algorithm;
 
 	/**
 	 * The key to use for hashing.
 	 *
 	 * @var HiddenString
 	 */
-	protected $key;
+	protected HiddenString $key;
 
 	/**
 	 * Hmac constructor.

@@ -24,21 +24,21 @@ class KeypairSigner implements SignerInterface
 	 *
 	 * @var string
 	 */
-	protected $algorithm;
+	protected string $algorithm;
 
 	/**
 	 * Public key.
 	 *
 	 * @var HiddenString|null
 	 */
-	protected $public_key;
+	protected HiddenString|null $public_key;
 
 	/**
 	 * Private key.
 	 *
 	 * @var HiddenString|null
 	 */
-	protected $private_key;
+	protected HiddenString|null $private_key;
 
 	/**
 	 * KeypairSigner constructor.

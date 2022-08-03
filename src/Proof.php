@@ -8,24 +8,10 @@ class Proof
 	const ALGO_SHA384 = "SHA384";
 	const ALGO_SHA512 = "SHA512";
 
-	/**
-	 * Algorithm to use for signing token.
-	 *
-	 * @var SignerInterface
-	 */
-	protected $signer;
-
-	/**
-	 * Extra time to add to iat, exp, and nbf calculations.
-	 *
-	 * @var integer
-	 */
-	protected $leeway;
-
-	public function __construct(SignerInterface $signer, int $leeway = 0)
+	public function __construct(
+		protected SignerInterface $signer,
+		protected int $leeway = 0)
 	{
-		$this->signer = $signer;
-		$this->leeway = $leeway;
 	}
 
 	/**
@@ -41,16 +27,16 @@ class Proof
 				"typ" => "JWT"
 			]);
 
-		$payload = \json_encode($token->toArray());
+		$payload = \json_encode($token);
 
 		// Build the header and payload portion of the JWT.
-		$jwt = \base64_encode($header) . "." .
-				\base64_encode($payload);
+		$jwt = $this->base64_url_encode($header) . "." .
+				$this->base64_url_encode($payload);
 
 		// Compute the signature of the header and the payload.
 		$signature = $this->signer->sign($jwt);
 
-		return $jwt . "." . \base64_encode($signature);
+		return $jwt . "." . $this->base64_url_encode($signature);
 	}
 
 	/**
@@ -71,14 +57,14 @@ class Proof
 
 		$signature_verified = $this->signer->verify(
 			"{$header}.{$payload}",
-			\base64_decode($signature)
+			$this->base64_url_decode($signature)
 		);
 
 		if( !$signature_verified ){
 			throw new SignatureMismatchException("Token signature mismatch.");
 		}
 
-		$payload = \json_decode(\base64_decode($payload));
+		$payload = \json_decode($this->base64_url_decode($payload));
 
 		if( \json_last_error() !== JSON_ERROR_NONE ){
 			throw new InvalidTokenException("The token payload could not be decoded.");
@@ -99,9 +85,41 @@ class Proof
 		return new Token((array) $payload);
 	}
 
+	/**
+	 * Apply a URL safe transform to a base64 encoding.
+	 *
+	 * @param string $string
+	 * @return string
+	 */
+	private function base64_url_encode(string $string): string
+	{
+		return \str_replace(
+			["/", "+"],
+			["_", "-"],
+			\base64_encode($string)
+		);
+	}
+
+	/**
+	 * Apply a URL safe transform on a base64 decode.
+	 *
+	 * @param string $string
+	 * @return string
+	 */
+	private function base64_url_decode(string $string): string
+	{
+		return \base64_decode(
+			\str_replace(
+				["_", "-"],
+				["/", "+"],
+				$string
+			)
+		);
+	}
+
 	private function decodeHeader(string $header): object
 	{
-		$header = \json_decode(\base64_decode($header));
+		$header = \json_decode($this->base64_url_decode($header));
 
 		if( \json_last_error() !== JSON_ERROR_NONE ){
 			throw new InvalidTokenException("Could not decode token header.");

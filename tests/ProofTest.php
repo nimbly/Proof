@@ -27,7 +27,7 @@ class ProofTest extends TestCase
 		);
 
 		$this->assertEquals(
-			"eyJhbGdvIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ==.eyJzdWIiOjEyMzR9.cmbeiUAq1k/poCcsCdcYetHPo7QzMEH/CpBApozs6RU=",
+			"eyJhbGdvIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ==.eyJzdWIiOjEyMzR9.cmbeiUAq1k_poCcsCdcYetHPo7QzMEH_CpBApozs6RU=",
 			$jwt
 		);
 	}

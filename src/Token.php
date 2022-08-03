@@ -2,23 +2,17 @@
 
 namespace Nimbly\Proof;
 
-class Token
-{
-	/**
-	 * Token claims.
-	 *
-	 * @var array<string,mixed>
-	 */
-	protected $claims;
+use JsonSerializable;
 
+class Token implements JsonSerializable
+{
 	/**
 	 * Token constructor.
 	 *
-	 * @param array<string,mixed> $claims
+	 * @param array<string,mixed> $claims JWT claims for token.
 	 */
-	public function __construct(array $claims = [])
+	public function __construct(protected array $claims = [])
 	{
-		$this->claims = $claims;
 	}
 
 	/**
@@ -63,5 +57,13 @@ class Token
 	public function toArray(): array
 	{
 		return $this->claims;
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function jsonSerialize(): mixed
+	{
+		return $this->toArray();
 	}
 }

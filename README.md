@@ -142,15 +142,3 @@ Using the private key that was just created, output a public key.
 ```bash
 openssl rsa -in private.pem -outform PEM -pubout -out public.pem
 ```
-
-## Token
-
-The `Token` instance represents the payload portion of the JWT and its claims.
-
-When decoding a JWT, you will receive a `Token` instance. With the `Token` instance you can get any of the claims it holds.
-
-```php
-$token = $proof->decode($jwt);
-
-$user_id = $token->getClaim("sub");
-```

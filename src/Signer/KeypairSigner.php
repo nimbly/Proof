@@ -13,7 +13,7 @@ class KeypairSigner implements SignerInterface
 	 *
 	 * @var array<string,string>
 	 */
-	private $supported_algorithms = [
+	private array $supported_algorithms = [
 		"SHA256" => "RS256",
 		"SHA384" => "RS384",
 		"SHA512" => "RS512"

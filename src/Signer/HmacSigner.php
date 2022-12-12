@@ -13,7 +13,7 @@ class HmacSigner implements SignerInterface
 	 *
 	 * @var array<string,string>
 	 */
-	private $supported_algorithms = [
+	private array $supported_algorithms = [
 		"SHA256" => "HS256",
 		"SHA384" => "HS384",
 		"SHA512" => "HS512"

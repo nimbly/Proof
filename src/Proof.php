@@ -18,16 +18,23 @@ class Proof
 	 * Encode a Token instance into a JWT.
 	 *
 	 * @param Token $token
+	 * @throws TokenEncodingException
 	 * @return string
 	 */
 	public function encode(Token $token): string
 	{
-		$header = \json_encode([
+		$header = \json_encode(
+			[
 				"algo" => $this->signer->getAlgorithm(),
 				"typ" => "JWT"
-			]);
+			]
+		);
 
 		$payload = \json_encode($token);
+
+		if( $header === false || $payload === false ){
+			throw new TokenEncodingException("Failed to encode token.");
+		}
 
 		// Build the header and payload portion of the JWT.
 		$jwt = $this->base64_url_encode($header) . "." .
@@ -43,6 +50,10 @@ class Proof
 	 * Decode a JWT string into a Token instance.
 	 *
 	 * @param string $jwt
+	 * @throws InvalidTokenException
+	 * @throws SignatureMismatchException
+	 * @throws ExpiredTokenException
+	 * @throws TokenNotReadyException
 	 * @return Token
 	 */
 	public function decode(string $jwt): Token
@@ -70,7 +81,7 @@ class Proof
 		$decoded_payload = \json_decode($this->base64_url_decode($payload));
 
 		if( \json_last_error() !== JSON_ERROR_NONE ){
-			throw new InvalidTokenException("The token payload could not be decoded.");
+			throw new InvalidTokenException("The token payload could not be JSON decoded.");
 		}
 
 		$timestamp = \time() + $this->leeway;
@@ -114,8 +125,8 @@ class Proof
 	{
 		return \base64_decode(
 			\str_replace(
-				["_", "-"],
-				["/", "+"],
+				["_", "-", "="],
+				["/", "+", ""],
 				$string
 			)
 		);

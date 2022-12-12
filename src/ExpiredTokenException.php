@@ -2,9 +2,6 @@
 
 namespace Nimbly\Proof;
 
-use Exception;
-
-class ExpiredTokenException extends Exception
+class ExpiredTokenException extends TokenDecodingException
 {
-
 }

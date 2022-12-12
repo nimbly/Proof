@@ -126,6 +126,31 @@ class ProofTest extends TestCase
 		$proof->decode($jwt);
 	}
 
+	public function test_jwt_with_base64_padding_can_still_match_signature(): void
+	{
+		$header = \base64_encode(\json_encode(["typ" => "JWT", "algo" => "sha256"]));
+		$payload = \base64_encode(\json_encode(["sub" => "816d83f0-2f71-4457-bd8b-bb674bda093d", "act" => "e0cd89b9-3377-4850-a70a-a9fd2c698098", "email" => "test@example.com"]));
+
+		$signer = new HmacSigner(Proof::ALGO_SHA384, "supersecret");
+
+		$signature = \base64_encode($signer->sign($header . "." . $payload));
+
+		$jwt = \sprintf(
+			"%s.%s.%s",
+			$header,
+			$payload,
+			$signature
+		);
+
+		$proof = new Proof($signer);
+		$token = $proof->decode($jwt);
+
+		$this->assertInstanceOf(Token::class, $token);
+		$this->assertEquals("816d83f0-2f71-4457-bd8b-bb674bda093d", $token->getClaim("sub"));
+		$this->assertEquals("e0cd89b9-3377-4850-a70a-a9fd2c698098", $token->getClaim("act"));
+		$this->assertEquals("test@example.com", $token->getClaim("email"));
+	}
+
 	public function test_valid_jwt_returns_token_instance(): void
 	{
 		$token = new Token([

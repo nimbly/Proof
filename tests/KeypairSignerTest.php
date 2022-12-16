@@ -3,18 +3,18 @@
 use PHPUnit\Framework\TestCase;
 use Nimbly\Proof\Proof;
 use Nimbly\Proof\Signer\KeypairSigner;
+use Nimbly\Proof\SigningException;
 
 /**
  * @covers Nimbly\Proof\Signer\KeypairSigner
  */
 class KeypairSignerTest extends TestCase
 {
-	public function test_constructor_sets_algorithm_property(): void
+	public function test_constructor_throws_exception_sets_algorithm_property(): void
 	{
 		$keypairSigner = new KeypairSigner(
 			Proof::ALGO_SHA256,
-			\file_get_contents(__DIR__ . "/public.pem"),
-			\file_get_contents(__DIR__ . "/private.pem")
+			\openssl_get_privatekey(\file_get_contents(__DIR__ . "/private.pem"))
 		);
 
 		$reflectionClass = new ReflectionClass($keypairSigner);
@@ -27,51 +27,11 @@ class KeypairSignerTest extends TestCase
 		);
 	}
 
-	public function test_constructor_sets_public_key_property_as_hidden_string(): void
-	{
-		$public_key = \file_get_contents(__DIR__ . "/public.pem");
-
-		$keypairSigner = new KeypairSigner(
-			Proof::ALGO_SHA256,
-			$public_key
-		);
-
-		$reflectionClass = new ReflectionClass($keypairSigner);
-		$reflectionProperty = $reflectionClass->getProperty("public_key");
-		$reflectionProperty->setAccessible(true);
-
-		$this->assertEquals(
-			$public_key,
-			$reflectionProperty->getValue($keypairSigner)->getString()
-		);
-	}
-
-	public function test_constructor_sets_private_key_property_as_hidden_string(): void
-	{
-		$private_key = \file_get_contents(__DIR__ . "/private.pem");
-
-		$keypairSigner = new KeypairSigner(
-			Proof::ALGO_SHA256,
-			\file_get_contents(__DIR__ . "/public.pem"),
-			$private_key
-		);
-
-		$reflectionClass = new ReflectionClass($keypairSigner);
-		$reflectionProperty = $reflectionClass->getProperty("private_key");
-		$reflectionProperty->setAccessible(true);
-
-		$this->assertEquals(
-			$private_key,
-			$reflectionProperty->getValue($keypairSigner)->getString()
-		);
-	}
-
 	public function test_get_algorithm_returns_hs256_for_sha256(): void
 	{
 		$keypairSigner = new KeypairSigner(
 			Proof::ALGO_SHA256,
-			\file_get_contents(__DIR__ . "/public.pem"),
-			\file_get_contents(__DIR__ . "/private.pem")
+			\openssl_get_privatekey(\file_get_contents(__DIR__ . "/private.pem"))
 		);
 
 		$this->assertEquals(
@@ -84,8 +44,7 @@ class KeypairSignerTest extends TestCase
 	{
 		$keypairSigner = new KeypairSigner(
 			Proof::ALGO_SHA384,
-			\file_get_contents(__DIR__ . "/public.pem"),
-			\file_get_contents(__DIR__ . "/private.pem")
+			\openssl_get_privatekey(\file_get_contents(__DIR__ . "/private.pem"))
 		);
 
 		$this->assertEquals(
@@ -98,8 +57,7 @@ class KeypairSignerTest extends TestCase
 	{
 		$keypairSigner = new KeypairSigner(
 			Proof::ALGO_SHA512,
-			\file_get_contents(__DIR__ . "/public.pem"),
-			\file_get_contents(__DIR__ . "/private.pem")
+			\openssl_get_privatekey(\file_get_contents(__DIR__ . "/private.pem"))
 		);
 
 		$this->assertEquals(
@@ -112,8 +70,8 @@ class KeypairSignerTest extends TestCase
 	{
 		$keypairSigner = new KeypairSigner(
 			Proof::ALGO_SHA256,
-			\file_get_contents(__DIR__ . "/public.pem"),
-			\file_get_contents(__DIR__ . "/private.pem")
+			\openssl_get_publickey(\file_get_contents(__DIR__ . "/public.pem")),
+			\openssl_get_privatekey(\file_get_contents(__DIR__ . "/private.pem"))
 		);
 
 		$message = "Message";
@@ -123,5 +81,48 @@ class KeypairSignerTest extends TestCase
 		$this->assertTrue(
 			$keypairSigner->verify($message, $signature)
 		);
+	}
+
+	public function test_signing_with_no_private_key_throws_signing_exception(): void
+	{
+		$keypairSigner = new KeypairSigner(
+			Proof::ALGO_SHA256,
+			\openssl_get_publickey(\file_get_contents(__DIR__ . "/public.pem"))
+		);
+
+		$this->expectException(SigningException::class);
+		$keypairSigner->sign("Message");
+	}
+
+	public function test_signing_with_public_key_throws_error(): void
+	{
+		$keypairSigner = new KeypairSigner(
+			algorithm: Proof::ALGO_SHA256,
+			private_key: \openssl_get_publickey(\file_get_contents(__DIR__ . "/public.pem"))
+		);
+
+		$this->expectError();
+		$keypairSigner->sign("Message");
+	}
+
+	public function test_verify_with_no_public_key_throws_signing_exception(): void
+	{
+		$keypairSigner = new KeypairSigner(
+			Proof::ALGO_SHA256
+		);
+
+		$this->expectException(SigningException::class);
+		$keypairSigner->verify("Message", "signature");
+	}
+
+	public function test_verify_with_private_key_throws_error(): void
+	{
+		$keypairSigner = new KeypairSigner(
+			Proof::ALGO_SHA256,
+			public_key: \openssl_get_privatekey(\file_get_contents(__DIR__ . "/private.pem"))
+		);
+
+		$this->expectError();
+		$keypairSigner->verify("Message", "signature");
 	}
 }

@@ -16,6 +16,22 @@ use Nimbly\Proof\TokenNotReadyException;
  */
 class ProofTest extends TestCase
 {
+	public function test_default_leeway_value(): void
+	{
+		$proof = new Proof(
+			new HmacSigner(Proof::ALGO_SHA256, "supersecret")
+		);
+
+		$reflectionClass = new ReflectionClass($proof);
+		$reflectionProperty = $reflectionClass->getProperty("leeway");
+		$reflectionProperty->setAccessible(true);
+
+		$this->assertEquals(
+			0,
+			$reflectionProperty->getValue($proof)
+		);
+	}
+
 	public function test_encode_returns_jwt(): void
 	{
 		$proof = new Proof(

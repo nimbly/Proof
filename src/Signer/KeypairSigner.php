@@ -3,8 +3,8 @@
 namespace Nimbly\Proof\Signer;
 
 use Nimbly\Proof\SignerInterface;
-use ParagonIE\HiddenString\HiddenString;
-use RuntimeException;
+use Nimbly\Proof\SigningException;
+use OpenSSLAsymmetricKey;
 
 class KeypairSigner implements SignerInterface
 {
@@ -20,50 +20,19 @@ class KeypairSigner implements SignerInterface
 	];
 
 	/**
-	 * Algorithm to use for signing token.
-	 *
-	 * @var string
-	 */
-	protected string $algorithm;
-
-	/**
-	 * Public key.
-	 *
-	 * @var HiddenString|null
-	 */
-	protected HiddenString|null $public_key;
-
-	/**
-	 * Private key.
-	 *
-	 * @var HiddenString|null
-	 */
-	protected HiddenString|null $private_key;
-
-	/**
-	 * KeypairSigner constructor.
-	 *
 	 * @param string $algorithm Algorithm to use when signing: SHA256, SHA384, SHA512
-	 * @param string|null $public_key Public key contents.
-	 * @param string|null $private_key Private key contents.
+	 * @param OpenSSLAsymmetricKey|null $private_key Private key instance
+	 * @param OpenSSLAsymmetricKey|null $public_key Public key instance
 	 */
 	public function __construct(
-		string $algorithm,
-		?string $public_key,
-		?string $private_key = null
+		protected string $algorithm,
+		protected ?OpenSSLAsymmetricKey $public_key = null,
+		protected ?OpenSSLAsymmetricKey $private_key = null
 	)
 	{
 		if( \array_key_exists($algorithm, $this->supported_algorithms) === false ){
-			throw new RuntimeException("Unsupported algorithm \"{$algorithm}\".");
+			throw new SigningException("Unsupported algorithm \"{$algorithm}\".");
 		}
-
-		if( empty($public_key) && empty($private_key) ){
-			throw new RuntimeException("A public and/or private key is required.");
-		}
-
-		$this->algorithm = $algorithm;
-		$this->public_key = $public_key ? new HiddenString($public_key) : null;
-		$this->private_key = $private_key ? new HiddenString($private_key) : null;
 	}
 
 	/**
@@ -87,21 +56,21 @@ class KeypairSigner implements SignerInterface
 	 */
 	public function sign(string $message): string
 	{
-		if( empty($this->private_key) ){
-			throw new RuntimeException("Cannot sign message: private key has not been provided.");
-		}
-
 		$signature = "";
+
+		if( empty($this->private_key) ){
+			throw new SigningException("No private key provided to sign with.");
+		}
 
 		$status = \openssl_sign(
 			$message,
 			$signature,
-			$this->private_key->getString(),
+			$this->private_key,
 			$this->algorithm
 		);
 
 		if( $status === false ){
-			throw new RuntimeException("Failed to sign the message.");
+			throw new SigningException("Failed to sign the message.");
 		}
 
 		return $signature;
@@ -113,18 +82,18 @@ class KeypairSigner implements SignerInterface
 	public function verify(string $message, string $signature): bool
 	{
 		if( empty($this->public_key) ){
-			throw new RuntimeException("Cannot verify signature: public key has not been provided.");
+			throw new SigningException("No public key provided to verify with.");
 		}
 
 		$status = \openssl_verify(
 			$message,
 			$signature,
-			$this->public_key->getString(),
+			$this->public_key,
 			$this->algorithm
 		);
 
 		if( $status < 0 ){
-			throw new RuntimeException("An error occured when trying to verify signature of message.");
+			throw new SigningException("An error occured when trying to verify signature of message.");
 		}
 
 		return (bool) $status;

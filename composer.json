@@ -1,6 +1,6 @@
 {
     "name": "nimbly/proof",
-    "description": "Simple JWT implementation",
+    "description": "A simple library that can be used to encode and decode JWTs.",
     "type": "library",
     "license": "MIT",
     "authors": [
@@ -22,10 +22,11 @@
 		}
 	},
 	"require-dev": {
-        "phpunit/phpunit": "^9",
-        "vimeo/psalm": "^4",
+        "phpunit/phpunit": "^9.0",
+        "vimeo/psalm": "^5.0",
         "symfony/var-dumper": "^5.1",
         "php-coveralls/php-coveralls": "^2.2",
-        "nimbly/capsule": "^2.0"
+        "nimbly/capsule": "^2.0",
+        "infection/infection": "^0.26.16"
 	}
 }

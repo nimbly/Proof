@@ -23,8 +23,8 @@ The signer is responsible for signing your JWT to prevent tampering of your toke
 $proof = new Proof(
 	new KeypairSigner(
 		Proof::ALGO_SHA256,
-		$public_key_contents,
-		$private_key_contents
+		\openssl_get_publickey($public_key_contents),
+		\openssl_get_privatekey($private_key_contents)
 	)
 );
 ```
@@ -141,25 +141,26 @@ $hmacSigner = new HmacSigner(
 );
 ```
 
-When using a shared secret, remember that it should be considered *highly* sensitive data and, as such, should not be persisted in a Github repo or deployed within your application. If an unauthorized 3rd party is able to get access to your shared secret, they will be able to create tokens to hack into any user or system account.
+When using a shared secret, remember that it should be considered *highly* sensitive data and, as such, should not be persisted in a code repository (public or private) or deployed within your application. If an unauthorized 3rd party is able to gain access to your shared secret, they will be able to create their own tokens which could lead to leakage of sensitive data of your users and systems. If you suspect your shared secret has been leaked, generate a new shared secret immediately.
 
 ### Key pair
 
 The `KeypairSigner` is the preferred signing method as it is more secure than using the `HmacSigner`. The key pair signer relies on using a private and public key pair. The private key is used to sign the JWT however the public key can only be used to verify signatures.
 
 The private key is optional and only required if you need to sign new tokens.
+The public key is optional and only required if you need to verify signatures.
 
 ```php
 $keypairSigner = new KeypairSigner(
 	Proof::ALGO_SHA256,
-	$secretsManager->getSecret("public_key"),
-	$secretsManager->getSecret("private_key")
+	\openssl_get_publickey($secretsManager->getSecret("public_key")),
+	\openssl_get_privatekey($secretsManager->getSecret("private_key"))
 );
 ```
 
 #### Generating a key pair
 
-You can create a key pair using `openssl` found on most Linux systems.
+If you don't already have one, you can create a key pair using `openssl` found on most Linux systems.
 
 ```bash
 openssl genrsa -des3 -out private.pem 2048
@@ -171,13 +172,15 @@ Using the private key file that was just created (`private.pem`), output a publi
 openssl rsa -in private.pem -outform PEM -pubout -out public.pem
 ```
 
-You should now have two files called `private.pem` and `public.pem`. The `private.pem` file is your private key and can be used to sign your JWTs. The `public.pem` file is your public key and can *only* be used to validate signatures on your JWTs.
+You should now have two files called `private.pem` and `public.pem`. The `private.pem` file is your private key and can be used to sign your JWTs. The `public.pem` file is your public key and can *only* be used to validate signatures on your signed JWTs.
 
-When creating a key pair, remember that your **private** key should be considered *highly* sensitive data and, as such, should not be persisted in a Github repo or deployed within your application. If an unauthorized 3rd party is able to get access to your private key, they will be able to create tokens to hack into any user or system account.
+Separating private and public keys is especially useful in a distributed or microservice architecture where most services only need to validate a JWT but do not generate their own tokens. For those services you only need the public key.
 
-### SignerInterface
+When creating a key pair, remember that your **private key** should be considered *highly* sensitive data and, as such, should not be persisted in a code repository (public or private) or deployed within your application. If an unauthorized 3rd party is able to gain access to your private key, they will be able to create their own tokens which could lead to leakage of sensitive data of your users and systems. If you suspect your private key has been leaked, generate a new key pair immediately.
 
-If you would like to implement your own custom signing solution, a `Nimbly\Proof\SignerInterface` is provided.
+### Custom signers
+
+If you would like to implement your own custom signing solution, a `Nimbly\Proof\SignerInterface` is provided and can be passed into the `Proof` constructor.
 
 ## PSR-15 Middleware
 

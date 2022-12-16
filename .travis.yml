@@ -2,7 +2,6 @@ language: php
 php:
   - 8.0
   - 8.1
-  - 8.2
 
 install:
   - composer install
@@ -10,6 +9,7 @@ install:
 script:
   - make coverage
   - make analyze
+  - make mutation
 
 after_success:
   - travis_retry php vendor/bin/php-coveralls

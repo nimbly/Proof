@@ -1,4 +1,4 @@
-dist: focal
+dist: jammy
 language: php
 php:
   - 8.0

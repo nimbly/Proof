@@ -1,6 +1,6 @@
 # Proof
 
-A simple JWT encoding and decoding library.
+A simple library capable of encoding, decoding, and validating signed JWTs.
 
 ## Requirements
 
@@ -21,11 +21,11 @@ The signer is responsible for signing your JWT to prevent tampering of your toke
 
 ```php
 $proof = new Proof(
-	new KeypairSigner(
-		Proof::ALGO_SHA256,
-		\openssl_get_publickey($public_key_contents),
-		\openssl_get_privatekey($private_key_contents)
-	)
+    new KeypairSigner(
+        Proof::ALGO_SHA256,
+        \openssl_get_publickey($public_key_contents),
+        \openssl_get_privatekey($private_key_contents)
+    )
 );
 ```
 
@@ -36,23 +36,23 @@ Create a token with claims.
 ```php
 $token = new Token([
     "iss" => "customer-data-service",
-	"sub" => "3f74ee01-7f0b-4e98-b2f7-245a07759e68",
-	"iat" => \time(),
-	"exp" => \strtotime("+1 hour")
+    "sub" => $user->id,
+    "iat" => \time(),
+    "exp" => \strtotime("+1 hour")
 ]);
 ```
 
-### Encode a Token into a JWT string
+### Encode the Token into a JWT string
 
-Encode your `Token` instance into a JWT string.
+Encode the `Token` instance into a JWT string.
 
 ```php
 $jwt = $proof->encode($token);
 ```
 
-### Decode a JWT string into a Token
+### Decode the JWT string into a Token
 
-Decode a JWT string into a `Token` instance.
+Decode the JWT string into a `Token` instance.
 
 ```php
 $token = $proof->decode($jwt);
@@ -68,10 +68,10 @@ When creating a `Token` instance, claims may be passed in through the constructo
 
 ```php
 $token = new Token([
-	"iss" => "customer-data-service",
-	"sub" => "3f74ee01-7f0b-4e98-b2f7-245a07759e68",
+    "iss" => "customer-data-service",
+    "sub" => $user->id,
     "custom_claim_foo" => "bar",
-	"exp" => 1596863306
+    "exp" => \strtotime("+1 hour")
 ])
 ```
 
@@ -103,11 +103,11 @@ You can get a claim on a token by calling the `getClaim` method.
 $not_before = $token->getClaim("nbf");
 ```
 
-You can check whether a claim exists or not by called the `hasClaim` method.
+You can check whether a claim exists or not by calling the `hasClaim` method.
 
 ```php
 if( $token->hasClaim("nbf") ){
-	// ...
+    // ...
 }
 ```
 
@@ -136,8 +136,8 @@ The `HmacSigner` uses a shared secret to sign messages and verify signatures. It
 
 ```php
 $hmacSigner = new HmacSigner(
-	Proof::ALGO_SHA256,
-	\getenv("jwt_signing_key")
+    Proof::ALGO_SHA256,
+    $secretsManager->getSecret("jwt_signing_key")
 );
 ```
 
@@ -147,14 +147,17 @@ When using a shared secret, remember that it should be considered *highly* sensi
 
 The `KeypairSigner` is the preferred signing method as it is more secure than using the `HmacSigner`. The key pair signer relies on using a private and public key pair. The private key is used to sign the JWT however the public key can only be used to verify signatures.
 
-The private key is optional and only required if you need to sign new tokens.
-The public key is optional and only required if you need to verify signatures.
+The `KeypairSigner` relies on a private and/or a public key as an instance of `OpenSSLAsymmetricKey` available in PHP since 4.0 with the `openssl` extension/module. You can load the keys using the `openssl_get_privatekey` and `openssl_get_publickey` functions.
+
+The private key is optional and only required if you need to sign new tokens. The public key is optional and only required if you need to verify signatures of tokens.
+
+For example:
 
 ```php
 $keypairSigner = new KeypairSigner(
-	Proof::ALGO_SHA256,
-	\openssl_get_publickey($secretsManager->getSecret("public_key")),
-	\openssl_get_privatekey($secretsManager->getSecret("private_key"))
+    Proof::ALGO_SHA256,
+    \openssl_get_publickey($secretsManager->getSecret("public_key")),
+    \openssl_get_privatekey($secretsManager->getSecret("private_key"))
 );
 ```
 
@@ -209,7 +212,7 @@ new Nimbly\Proof\Middleware\ValidateJwtMiddleware(
 );
 ```
 
-### Decorating ServerRequest instance
+### Decorating ServerRequestInterface instance
 
 A common practice is to decorate your requests with additional attributes to add more context for your request handlers, such as a `User` entity that contains the user making the request. With the use of the `Nimbly\Proof\Middleware\ValidateJwtMiddleware` and your own middleware, this becomes a fairly trivial task.
 
@@ -224,13 +227,13 @@ class AuthorizeUserMiddleware implements MiddlewareInterface
             throw new UnauthorizedHttpException("Bearer", "Please login to continue.");
         }
 
-		$user = App\Models\User::find($token->getClaim("sub"));
+        $user = App\Models\User::find($token->getClaim("sub"));
 
-		if( empty($user) ){
-			throw new UnauthorizedHttpException("Bearer", "Please login to continue.");
-		}
+        if( empty($user) ){
+            throw new UnauthorizedHttpException("Bearer", "Please login to continue.");
+        }
 
-		$request = $request->withAttribute(App\Models\User::class, $user);
+        $request = $request->withAttribute(App\Models\User::class, $user);
 
         return $handler->handle($request);
     }

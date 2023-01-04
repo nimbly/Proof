@@ -56,9 +56,7 @@ class ProofTest extends TestCase
 
 		$this->expectException(InvalidTokenException::class);
 
-		$proof->decode(
-			"header.payload"
-		);
+		$proof->decode("header.payload");
 	}
 
 	public function test_signature_verification_failure_throws_signature_mismatch_exception(): void

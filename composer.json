@@ -1,6 +1,6 @@
 {
     "name": "nimbly/proof",
-    "description": "A simple library that can be used to encode and decode JWTs.",
+    "description": "A simple library that can be used to validate, encode, and decode JWTs.",
     "type": "library",
     "license": "MIT",
     "authors": [
@@ -26,7 +26,6 @@
         "vimeo/psalm": "^5.0",
         "symfony/var-dumper": "^5.1",
         "php-coveralls/php-coveralls": "^2.2",
-        "nimbly/capsule": "^2.0",
-        "infection/infection": "^0.26.16"
+        "nimbly/capsule": "^2.0"
 	}
 }

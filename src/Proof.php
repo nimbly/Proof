@@ -33,7 +33,7 @@ class Proof
 		$payload = \json_encode($token);
 
 		if( $header === false || $payload === false ){
-			throw new TokenEncodingException("Failed to encode token.");
+			throw new TokenEncodingException("Failed to JSON encode token.");
 		}
 
 		// Build the header and payload portion of the JWT.

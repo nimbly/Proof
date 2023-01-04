@@ -52,7 +52,7 @@ class ValidateJwtMiddleware implements MiddlewareInterface
 	 */
 	private function getBearerToken(string $authorization_header, ?string $scheme = "Bearer"): ?string
 	{
-		$b64encoded = "[0-9a-zA-Z_\=\-\/]+";
+		$b64encoded = "[0-9a-zA-Z_\+\=\-\/]+";
 
 		$pattern = \sprintf(
 			"/^%s(%s\.%s\.%s)$/i",

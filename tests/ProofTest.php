@@ -11,8 +11,6 @@ use Nimbly\Proof\TokenNotReadyException;
 
 /**
  * @covers Nimbly\Proof\Proof
- * @covers Nimbly\Proof\Token
- * @covers Nimbly\Proof\Signer\HmacSigner
  */
 class ProofTest extends TestCase
 {

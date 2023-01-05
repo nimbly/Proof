@@ -8,6 +8,10 @@ class Proof
 	const ALGO_SHA384 = "SHA384";
 	const ALGO_SHA512 = "SHA512";
 
+	/**
+	 * @param SignerInterface $signer
+	 * @param integer $leeway Time in seconds to add to expiration and "not-before" date calculations to account for drift. The leeway can be negative if you wish.
+	 */
 	public function __construct(
 		protected SignerInterface $signer,
 		protected int $leeway = 0)
@@ -37,13 +41,13 @@ class Proof
 		}
 
 		// Build the header and payload portion of the JWT.
-		$jwt = $this->base64_url_encode($header) . "." .
-				$this->base64_url_encode($payload);
+		$jwt = $this->base64UrlEncode($header) . "." .
+				$this->base64UrlEncode($payload);
 
 		// Compute the signature of the header and the payload.
 		$signature = $this->signer->sign($jwt);
 
-		return $jwt . "." . $this->base64_url_encode($signature);
+		return $jwt . "." . $this->base64UrlEncode($signature);
 	}
 
 	/**
@@ -68,7 +72,7 @@ class Proof
 
 		$signature_verified = $this->signer->verify(
 			"{$header}.{$payload}",
-			$this->base64_url_decode($signature)
+			$this->base64UrlDecode($signature)
 		);
 
 		if( !$signature_verified ){
@@ -78,21 +82,21 @@ class Proof
 		/**
 		 * @var object $decoded_payload
 		 */
-		$decoded_payload = \json_decode($this->base64_url_decode($payload));
+		$decoded_payload = \json_decode($this->base64UrlDecode($payload));
 
 		if( \json_last_error() !== JSON_ERROR_NONE ){
 			throw new InvalidTokenException("The token payload could not be JSON decoded.");
 		}
 
-		$timestamp = \time() + $this->leeway;
+		$timestamp = \time();
 
 		if( isset($decoded_payload->exp) &&
-			$decoded_payload->exp < $timestamp ){
+			$decoded_payload->exp < ($timestamp + $this->leeway) ){
 			throw new ExpiredTokenException("The token has expired.");
 		}
 
 		if( isset($decoded_payload->nbf) &&
-			$decoded_payload->nbf > $timestamp ){
+			$decoded_payload->nbf > ($timestamp - $this->leeway) ){
 			throw new TokenNotReadyException("The token is not ready to be accepted yet.");
 		}
 
@@ -106,7 +110,7 @@ class Proof
 	 * @param string $string
 	 * @return string
 	 */
-	private function base64_url_encode(string $string): string
+	private function base64UrlEncode(string $string): string
 	{
 		return \str_replace(
 			["/", "+", "="],
@@ -121,7 +125,7 @@ class Proof
 	 * @param string $string
 	 * @return string
 	 */
-	private function base64_url_decode(string $string): string
+	private function base64UrlDecode(string $string): string
 	{
 		return \base64_decode(
 			\str_replace(

@@ -1,28 +1,22 @@
 <?php
 
-use PHPUnit\Framework\TestCase;
 use Nimbly\Proof\Proof;
 use Nimbly\Proof\Signer\HmacSigner;
+use Nimbly\Proof\SigningException;
+use PHPUnit\Framework\TestCase;
 
 /**
  * @covers Nimbly\Proof\Signer\HmacSigner
  */
 class HmacSignerTest extends TestCase
 {
-	public function test_constructor_sets_algorithm_property(): void
+	public function test_constructor_throws_exception_if_alogrithm_is_not_supported(): void
 	{
+		$this->expectException(SigningException::class);
+
 		$hmacSigner = new HmacSigner(
-			Proof::ALGO_SHA256,
+			"SHA128",
 			"supersecretkey"
-		);
-
-		$reflectionClass = new ReflectionClass($hmacSigner);
-		$reflectionProperty = $reflectionClass->getProperty("algorithm");
-		$reflectionProperty->setAccessible(true);
-
-		$this->assertEquals(
-			Proof::ALGO_SHA256,
-			$reflectionProperty->getValue($hmacSigner)
 		);
 	}
 
@@ -79,6 +73,38 @@ class HmacSignerTest extends TestCase
 		$this->assertEquals(
 			"HS512",
 			$hmacSigner->getAlgorithm()
+		);
+	}
+
+	public function test_is_algorithm_supported_returns_true_for_supported_algorithms(): void
+	{
+		$keypairSigner = new HmacSigner(
+			Proof::ALGO_SHA256,
+			"supersecretkey"
+		);
+
+		$this->assertTrue(
+			$keypairSigner->isAlgorithmSupported("HS256")
+		);
+
+		$this->assertTrue(
+			$keypairSigner->isAlgorithmSupported("HS384")
+		);
+
+		$this->assertTrue(
+			$keypairSigner->isAlgorithmSupported("HS512")
+		);
+	}
+
+	public function test_is_algorithm_supported_returns_false_for_unsupported_algorithms(): void
+	{
+		$keypairSigner = new HmacSigner(
+			Proof::ALGO_SHA256,
+			"supersecretkey"
+		);
+
+		$this->assertFalse(
+			$keypairSigner->isAlgorithmSupported("RS128")
 		);
 	}
 

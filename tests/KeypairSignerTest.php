@@ -10,20 +10,13 @@ use Nimbly\Proof\SigningException;
  */
 class KeypairSignerTest extends TestCase
 {
-	public function test_constructor_throws_exception_sets_algorithm_property(): void
+	public function test_constructor_throws_exception_if_alogrithm_is_not_supported(): void
 	{
+		$this->expectException(SigningException::class);
+
 		$keypairSigner = new KeypairSigner(
-			Proof::ALGO_SHA256,
+			"SHA128",
 			\openssl_get_privatekey(\file_get_contents(__DIR__ . "/private.pem"))
-		);
-
-		$reflectionClass = new ReflectionClass($keypairSigner);
-		$reflectionProperty = $reflectionClass->getProperty("algorithm");
-		$reflectionProperty->setAccessible(true);
-
-		$this->assertEquals(
-			Proof::ALGO_SHA256,
-			$reflectionProperty->getValue($keypairSigner)
 		);
 	}
 
@@ -80,6 +73,38 @@ class KeypairSignerTest extends TestCase
 
 		$this->assertTrue(
 			$keypairSigner->verify($message, $signature)
+		);
+	}
+
+	public function test_is_algorithm_supported_returns_true_for_supported_algorithms(): void
+	{
+		$keypairSigner = new KeypairSigner(
+			Proof::ALGO_SHA256,
+			\openssl_get_publickey(\file_get_contents(__DIR__ . "/public.pem"))
+		);
+
+		$this->assertTrue(
+			$keypairSigner->isAlgorithmSupported("RS256")
+		);
+
+		$this->assertTrue(
+			$keypairSigner->isAlgorithmSupported("RS384")
+		);
+
+		$this->assertTrue(
+			$keypairSigner->isAlgorithmSupported("RS512")
+		);
+	}
+
+	public function test_is_algorithm_supported_returns_false_for_unsupported_algorithms(): void
+	{
+		$keypairSigner = new KeypairSigner(
+			Proof::ALGO_SHA256,
+			\openssl_get_publickey(\file_get_contents(__DIR__ . "/public.pem"))
+		);
+
+		$this->assertFalse(
+			$keypairSigner->isAlgorithmSupported("RS128")
 		);
 	}
 

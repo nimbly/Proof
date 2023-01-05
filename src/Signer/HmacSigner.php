@@ -34,7 +34,6 @@ class HmacSigner implements SignerInterface
 			throw new SigningException("Unsupported algorithm \"{$algorithm}\".");
 		}
 
-		$this->algorithm = $algorithm;
 		$this->key = new HiddenString($key);
 	}
 

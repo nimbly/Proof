@@ -7,6 +7,7 @@ use Nimbly\Proof\Proof;
 use Nimbly\Proof\SignatureMismatchException;
 use Nimbly\Proof\Signer\HmacSigner;
 use Nimbly\Proof\Token;
+use Nimbly\Proof\TokenEncodingException;
 use Nimbly\Proof\TokenNotReadyException;
 
 /**
@@ -44,6 +45,20 @@ class ProofTest extends TestCase
 			"eyJhbGdvIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOjEyMzR9.zPBvMNQqDQldmAgMrcEwarbv28Dw2NEHvoC8PoLCNzY",
 			$jwt
 		);
+	}
+
+	public function test_encode_bad_payload_throws_token_encoding_exception(): void
+	{
+		$proof = new Proof(
+			new HmacSigner(Proof::ALGO_SHA256, "supersecret")
+		);
+
+		$token = new Token([
+			"sub" => \fopen(__DIR__ . "/public.pem", "r")
+		]);
+
+		$this->expectException(TokenEncodingException::class);
+		$proof->encode($token);
 	}
 
 	public function test_decode_missing_parts_throws_invalid_token_exception(): void

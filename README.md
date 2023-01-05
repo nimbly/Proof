@@ -5,7 +5,7 @@ A simple library capable of encoding, decoding, and validating signed JWTs.
 ## Requirements
 
 * PHP 8.x
-* Openssl PHP extension
+* OpenSSL PHP extension
 
 ## Installing
 
@@ -15,9 +15,9 @@ composer install nimbly/proof
 
 ## Usage overview
 
-### Initialize with your signer
+### Instantiate
 
-The signer is responsible for signing your JWT to prevent tampering of your tokens. The `Proof` instance must be provided with your signing preference: `HmacSigner` or `KeypairSigner` (see **Signers** section for more information).
+Create a new `Proof` instance with your `SignerInterface` instance. The signer is responsible for signing your JWT to prevent tampering of your tokens. The `Proof` instance must be provided with your signing preference: `HmacSigner` or `KeypairSigner` (see **Signers** section for more information).
 
 ```php
 $proof = new Proof(
@@ -31,7 +31,7 @@ $proof = new Proof(
 
 ### Create a token
 
-Create a token with claims.
+Create a new token with claims.
 
 ```php
 $token = new Token([
@@ -58,7 +58,7 @@ Decode the JWT string into a `Token` instance.
 $token = $proof->decode($jwt);
 ```
 
-## Token
+## Tokens
 
 A `Token` instance represents the payload of the JWT, where the meaningful application level data is stored. Things like the **sub**ject of the token, the **exp**iration timestamp, etc. This data is called a `claim`. For a full list of predefined public claims, see [https://www.iana.org/assignments/jwt/jwt.xhtml#claims](https://www.iana.org/assignments/jwt/jwt.xhtml#claims). You can also use your own custom claims to fit your needs.
 
@@ -81,17 +81,24 @@ Or you can set a claim on a token by calling the `setClaim` method.
 $token->setClaim("nbf", \strtotime("+1 week"));
 ```
 
-### Convert a Token into a JWT
+### Encode a Token into a JWT
 
-With a `Token` instance, you can convert it into a JWT string by passing it into the `encode` method.
+With a `Token` instance, you can encode it into a signed JWT by passing it into the `encode` method. You will be returned a signed JWT string.
 
 ```php
 $jwt = $proof->encode($token);
 ```
 
-### Getting a Token from a JWT
+### Exceptions when encoding
 
-When you decode a JWT string, you will receive a `Token` instance back.
+When encoding a Token, there are several failure points that will throw an exception:
+
+* `TokenEncodingException` is thrown if the header or payload could not be properly JSON encoded.
+* `SigningException` is thrown if there was a problem signing the JWT with the given `SignerInterface` instance.
+
+### Decode a JWT into a Token
+
+When you decode a JWT string it will also verify the signature and check the expiration (`exp`) and "not before" (`nbf`) claims (if present). If successful, you will receive a `Token` instance back loaded with the claims from the payload of the JWT.
 
 ```php
 $token = $proof->decode($jwt);
@@ -100,14 +107,14 @@ $token = $proof->decode($jwt);
 You can get a claim on a token by calling the `getClaim` method.
 
 ```php
-$not_before = $token->getClaim("nbf");
+$subject = $token->getClaim("sub");
 ```
 
 You can check whether a claim exists or not by calling the `hasClaim` method.
 
 ```php
-if( $token->hasClaim("nbf") ){
-    // ...
+if( $token->hasClaim("sub") ){
+    // Load User from DB
 }
 ```
 
@@ -147,7 +154,7 @@ When using a shared secret, remember that it should be considered *highly* sensi
 
 The `KeypairSigner` is the preferred signing method as it is more secure than using the `HmacSigner`. The key pair signer relies on using a private and public key pair. The private key is used to sign the JWT however the public key can only be used to verify signatures.
 
-The `KeypairSigner` relies on a private and/or a public key as an instance of `OpenSSLAsymmetricKey` available in PHP since 4.0 with the `openssl` extension/module. You can load the keys using the `openssl_get_privatekey` and `openssl_get_publickey` functions.
+The `KeypairSigner` relies on a private and/or a public key as an instance of `OpenSSLAsymmetricKey` available in PHP since version 4.0 with the `openssl` extension/module. You can load the keys using the `openssl_get_privatekey` and `openssl_get_publickey` PHP functions.
 
 The private key is optional and only required if you need to sign new tokens. The public key is optional and only required if you need to verify signatures of tokens.
 
@@ -239,3 +246,5 @@ class AuthorizeUserMiddleware implements MiddlewareInterface
     }
 }
 ```
+
+In this example, each request that requires a user account has had that `User` instance attached to the `ServerRequestInteface` instance.

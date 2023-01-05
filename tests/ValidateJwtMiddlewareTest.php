@@ -64,8 +64,6 @@ class ValidateJwtMiddlewareTest extends TestCase
 			"exp" => \strtotime("+30 day")
 		]);
 
-		//dd($proof->encode($token));
-
 		$validateJwtMiddleware = new ValidateJwtMiddleware($proof);
 
 		$response = $validateJwtMiddleware->process(

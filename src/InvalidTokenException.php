@@ -2,9 +2,6 @@
 
 namespace Nimbly\Proof;
 
-use Exception;
-
-class InvalidTokenException extends Exception
+class InvalidTokenException extends TokenDecodingException
 {
-
 }

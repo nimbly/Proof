@@ -3,8 +3,8 @@
 namespace Nimbly\Proof\Signer;
 
 use Nimbly\Proof\SignerInterface;
+use Nimbly\Proof\SigningException;
 use ParagonIE\HiddenString\HiddenString;
-use RuntimeException;
 
 class HmacSigner implements SignerInterface
 {
@@ -13,42 +13,27 @@ class HmacSigner implements SignerInterface
 	 *
 	 * @var array<string,string>
 	 */
-	private $supported_algorithms = [
+	private array $supported_algorithms = [
 		"SHA256" => "HS256",
 		"SHA384" => "HS384",
 		"SHA512" => "HS512"
 	];
 
-	/**
-	 * Algorithm to use for hashing.
-	 *
-	 * @var string
-	 */
-	protected string $algorithm;
-
-	/**
-	 * The key to use for hashing.
-	 *
-	 * @var HiddenString
-	 */
 	protected HiddenString $key;
 
 	/**
-	 * Hmac constructor.
-	 *
 	 * @param string $algorithm The algorithm to use for signing messages. Can be SHA256, SHA384, or SHA512.
 	 * @param string $key The shared key to use for signing.
 	 */
 	public function __construct(
-		string $algorithm,
+		protected string $algorithm,
 		string $key
 	)
 	{
 		if( \array_key_exists($algorithm, $this->supported_algorithms) === false ){
-			throw new RuntimeException("Unsupported algorithm \"{$algorithm}\".");
+			throw new SigningException("Unsupported algorithm \"{$algorithm}\".");
 		}
 
-		$this->algorithm = $algorithm;
 		$this->key = new HiddenString($key);
 	}
 

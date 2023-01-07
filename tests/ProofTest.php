@@ -7,15 +7,30 @@ use Nimbly\Proof\Proof;
 use Nimbly\Proof\SignatureMismatchException;
 use Nimbly\Proof\Signer\HmacSigner;
 use Nimbly\Proof\Token;
+use Nimbly\Proof\TokenEncodingException;
 use Nimbly\Proof\TokenNotReadyException;
 
 /**
  * @covers Nimbly\Proof\Proof
- * @covers Nimbly\Proof\Token
- * @covers Nimbly\Proof\Signer\HmacSigner
  */
 class ProofTest extends TestCase
 {
+	public function test_default_leeway_value(): void
+	{
+		$proof = new Proof(
+			new HmacSigner(Proof::ALGO_SHA256, "supersecret")
+		);
+
+		$reflectionClass = new ReflectionClass($proof);
+		$reflectionProperty = $reflectionClass->getProperty("leeway");
+		$reflectionProperty->setAccessible(true);
+
+		$this->assertEquals(
+			0,
+			$reflectionProperty->getValue($proof)
+		);
+	}
+
 	public function test_encode_returns_jwt(): void
 	{
 		$proof = new Proof(
@@ -32,6 +47,20 @@ class ProofTest extends TestCase
 		);
 	}
 
+	public function test_encode_bad_payload_throws_token_encoding_exception(): void
+	{
+		$proof = new Proof(
+			new HmacSigner(Proof::ALGO_SHA256, "supersecret")
+		);
+
+		$token = new Token([
+			"sub" => \fopen(__DIR__ . "/public.pem", "r")
+		]);
+
+		$this->expectException(TokenEncodingException::class);
+		$proof->encode($token);
+	}
+
 	public function test_decode_missing_parts_throws_invalid_token_exception(): void
 	{
 		$proof = new Proof(
@@ -40,9 +69,7 @@ class ProofTest extends TestCase
 
 		$this->expectException(InvalidTokenException::class);
 
-		$proof->decode(
-			"header.payload"
-		);
+		$proof->decode("header.payload");
 	}
 
 	public function test_signature_verification_failure_throws_signature_mismatch_exception(): void
@@ -124,6 +151,31 @@ class ProofTest extends TestCase
 		$this->expectException(TokenNotReadyException::class);
 
 		$proof->decode($jwt);
+	}
+
+	public function test_jwt_with_base64_padding_can_still_match_signature(): void
+	{
+		$header = \base64_encode(\json_encode(["typ" => "JWT", "algo" => "sha256"]));
+		$payload = \base64_encode(\json_encode(["sub" => "816d83f0-2f71-4457-bd8b-bb674bda093d", "act" => "e0cd89b9-3377-4850-a70a-a9fd2c698098", "email" => "test@example.com"]));
+
+		$signer = new HmacSigner(Proof::ALGO_SHA384, "supersecret");
+
+		$signature = \base64_encode($signer->sign($header . "." . $payload));
+
+		$jwt = \sprintf(
+			"%s.%s.%s",
+			$header,
+			$payload,
+			$signature
+		);
+
+		$proof = new Proof($signer);
+		$token = $proof->decode($jwt);
+
+		$this->assertInstanceOf(Token::class, $token);
+		$this->assertEquals("816d83f0-2f71-4457-bd8b-bb674bda093d", $token->getClaim("sub"));
+		$this->assertEquals("e0cd89b9-3377-4850-a70a-a9fd2c698098", $token->getClaim("act"));
+		$this->assertEquals("test@example.com", $token->getClaim("email"));
 	}
 
 	public function test_valid_jwt_returns_token_instance(): void

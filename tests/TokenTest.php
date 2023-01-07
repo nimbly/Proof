@@ -84,4 +84,14 @@ class TokenTest extends TestCase
 			$token->toArray()
 		);
 	}
+
+	public function test_json_serializable_implementation(): void
+	{
+		$token = new Token(["sub" => 12345, "jti" => "abc123"]);
+
+		$this->assertEquals(
+			"{\"sub\":12345,\"jti\":\"abc123\"}",
+			\json_encode($token)
+		);
+	}
 }

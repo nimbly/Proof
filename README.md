@@ -29,9 +29,9 @@ $proof = new Proof(
 );
 ```
 
-### Create a token
+### Create a Token
 
-Create a new token with claims.
+Create a new `Token` with claims.
 
 ```php
 $token = new Token([
@@ -75,7 +75,7 @@ $token = new Token([
 ])
 ```
 
-Or you can set a claim on a token by calling the `setClaim` method.
+Or you can set a claim on a `Token` by calling the `setClaim` method.
 
 ```php
 $token->setClaim("nbf", \strtotime("+1 week"));
@@ -91,7 +91,7 @@ $jwt = $proof->encode($token);
 
 ### Exceptions when encoding
 
-When encoding a Token, there are several failure points that will throw an exception:
+When encoding a `Token`, there are several failure points that will throw an exception:
 
 * `TokenEncodingException` is thrown if the header or payload could not be properly JSON encoded.
 * `SigningException` is thrown if there was a problem signing the JWT with the given `SignerInterface` instance.
@@ -104,7 +104,7 @@ When you decode a JWT string it will also verify the signature and check the exp
 $token = $proof->decode($jwt);
 ```
 
-You can get a claim on a token by calling the `getClaim` method.
+You can get a claim on a `Token` by calling the `getClaim` method.
 
 ```php
 $subject = $token->getClaim("sub");
@@ -118,7 +118,7 @@ if( $token->hasClaim("sub") ){
 }
 ```
 
-You can get all claims on the token by calling the `toArray` method.
+You can get all claims on the `Token` by calling the `toArray` method.
 
 ```php
 $claims = $token->toArray();
@@ -206,7 +206,7 @@ If the JWT is invalid, an exception will be thrown. This exception will need to 
 The middleware defaults to looking for the JWT in the `Authorization` HTTP header with a `Bearer` scheme. For example:
 
 ```http
-Authorization: Bearer eyJhbGdvIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOjEyMzR9.zPBvMNQqDQldmAgMrcEwarbv28Dw2NEHvoC8PoLCNzY
+Authorization: Bearer eyJhbGdvIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJtc2ciOiJJIHNlZSB5b3UgbG9va2luZyBpbnRvIHRoaXMgdG9rZW4hIn0.BnWZZhTs3ikgfxI7izf-2XVULbotriCPNJKxf9AYEKU
 ```
 
 You can override this behavior in the constructor by supplying the header name (case insensitive) and scheme (case sensitive). If there is no scheme, you can use a `null` or empty string value instead.

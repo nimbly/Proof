@@ -1,6 +1,6 @@
 {
     "name": "nimbly/proof",
-    "description": "A simple library that can be used to validate, encode, and decode JWTs.",
+    "description": "A simple library capable of encoding, decoding, and validating signed JWTs.",
     "type": "library",
     "license": "MIT",
     "authors": [

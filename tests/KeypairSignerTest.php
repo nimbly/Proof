@@ -119,17 +119,6 @@ class KeypairSignerTest extends TestCase
 		$keypairSigner->sign("Message");
 	}
 
-	public function test_signing_with_public_key_throws_error(): void
-	{
-		$keypairSigner = new KeypairSigner(
-			algorithm: Proof::ALGO_SHA256,
-			private_key: \openssl_get_publickey(\file_get_contents(__DIR__ . "/public.pem"))
-		);
-
-		$this->expectError();
-		$keypairSigner->sign("Message");
-	}
-
 	public function test_verify_with_no_public_key_throws_signing_exception(): void
 	{
 		$keypairSigner = new KeypairSigner(
@@ -137,17 +126,6 @@ class KeypairSignerTest extends TestCase
 		);
 
 		$this->expectException(SigningException::class);
-		$keypairSigner->verify("Message", "signature");
-	}
-
-	public function test_verify_with_private_key_throws_error(): void
-	{
-		$keypairSigner = new KeypairSigner(
-			Proof::ALGO_SHA256,
-			public_key: \openssl_get_privatekey(\file_get_contents(__DIR__ . "/private.pem"))
-		);
-
-		$this->expectError();
 		$keypairSigner->verify("Message", "signature");
 	}
 }

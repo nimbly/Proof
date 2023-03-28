@@ -1,8 +1,8 @@
 # Proof
 
 [![Latest Stable Version](https://img.shields.io/packagist/v/nimbly/Proof.svg?style=flat-square)](https://packagist.org/packages/nimbly/Proof)
-[![Build Status](https://img.shields.io/travis/com/nimbly/Proof.svg?style=flat-square)](https://travis-ci.com/nimbly/Proof)
-[![Code Coverage](https://img.shields.io/coveralls/github/nimbly/Proof.svg?style=flat-square)](https://coveralls.io/github/nimbly/Proof)
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/nimbly/proof/php.yml?style=flat-square)](https://github.com/nimbly/Proof/actions/workflows/php.yml)
+[![Codecov branch](https://img.shields.io/codecov/c/github/nimbly/proof/master?style=flat-square)](https://app.codecov.io/github/nimbly/Proof)
 [![License](https://img.shields.io/github/license/nimbly/Proof.svg?style=flat-square)](https://packagist.org/packages/nimbly/Proof)
 
 A simple library capable of encoding, decoding, and validating signed JWTs.

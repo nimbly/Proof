@@ -25,7 +25,6 @@
         "phpunit/phpunit": "^9.0",
         "vimeo/psalm": "^5.0",
         "symfony/var-dumper": "^5.1",
-        "php-coveralls/php-coveralls": "^2.2",
         "nimbly/capsule": "^2.0"
 	}
 }

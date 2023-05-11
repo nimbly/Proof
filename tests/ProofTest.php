@@ -6,6 +6,7 @@ use Nimbly\Proof\InvalidTokenException;
 use Nimbly\Proof\Proof;
 use Nimbly\Proof\SignatureMismatchException;
 use Nimbly\Proof\Signer\HmacSigner;
+use Nimbly\Proof\SignerNotFoundException;
 use Nimbly\Proof\Token;
 use Nimbly\Proof\TokenEncodingException;
 use Nimbly\Proof\TokenNotReadyException;
@@ -45,6 +46,94 @@ class ProofTest extends TestCase
 			"eyJhbGdvIjoiSFMyNTYiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOjEyMzR9.zPBvMNQqDQldmAgMrcEwarbv28Dw2NEHvoC8PoLCNzY",
 			$jwt
 		);
+	}
+
+	public function test_encode_with_key_id_adds_kid_to_header(): void
+	{
+		$signer = new HmacSigner(Proof::ALGO_SHA256, "supersecret");
+
+		$proof = new Proof(
+			signer: $signer,
+			keyMap: [
+				"1234" => $signer
+			]
+		);
+
+		$token = new Token(["sub" => 12345]);
+		$jwt = $proof->encode($token, "1234");
+
+		$header = \json_decode(\base64_decode(\explode(".", $jwt)[0]));
+
+		$this->assertEquals(
+			"1234",
+			$header->kid
+		);
+	}
+
+	public function test_encode_with_unknown_key_id_throws_token_encoding_exception(): void
+	{
+		$signer = new HmacSigner(Proof::ALGO_SHA256, "supersecret");
+
+		$proof = new Proof(
+			signer: $signer,
+			keyMap: [
+				"1234" => $signer
+			]
+		);
+
+		$token = new Token(["sub" => 12345]);
+
+		$this->expectException(SignerNotFoundException::class);
+		$proof->encode($token, "abc");
+	}
+
+	public function test_decode_with_kid_in_header(): void
+	{
+		$signer = new HmacSigner(Proof::ALGO_SHA256, "supersecret");
+		$signer2 = new HmacSigner(Proof::ALGO_SHA256, "super_duper_secret");
+
+		$proof = new Proof(
+			signer: $signer,
+			keyMap: [
+				"1234" => $signer2
+			]
+		);
+
+		$token = new Token(["sub" => 12345]);
+		$jwt = $proof->encode($token, "1234");
+
+		$token = $proof->decode($jwt);
+
+		$this->assertEquals(
+			12345,
+			$token->getClaim("sub")
+		);
+	}
+
+	public function test_decode_with_unknown_key_id_throws_token_decoding_exception(): void
+	{
+		$signer = new HmacSigner(Proof::ALGO_SHA256, "supersecret");
+		$signer2 = new HmacSigner(Proof::ALGO_SHA256, "super_duper_secret");
+
+		$proof = new Proof(
+			signer: $signer,
+			keyMap: [
+				"1234" => $signer2
+			]
+		);
+
+		$token = new Token(["sub" => 12345]);
+		$jwt = $proof->encode($token, "1234");
+
+		$proof = new Proof(
+			signer: $signer,
+			keyMap: [
+				"abc" => $signer2
+			]
+		);
+
+		$this->expectException(SignerNotFoundException::class);
+		$proof->decode($jwt);
 	}
 
 	public function test_encode_bad_payload_throws_token_encoding_exception(): void

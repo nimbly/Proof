@@ -9,12 +9,14 @@ class Proof
 	const ALGO_SHA512 = "SHA512";
 
 	/**
-	 * @param SignerInterface $signer
+	 * @param SignerInterface $signer The default signing key used for encoding and decoding tokens.
 	 * @param integer $leeway Time in seconds to add to expiration and "not-before" date calculations to account for drift. The leeway can be negative if you wish.
+	 * @param array<string,SignerInterface> $keyMap If you're using multiple different signing keys, you can map them here as key/value pairs. If no kid is present in header or no kid provided when signing, then the default signing key will be used.
 	 */
 	public function __construct(
 		protected SignerInterface $signer,
-		protected int $leeway = 0)
+		protected int $leeway = 0,
+		protected array $keyMap = [])
 	{
 	}
 
@@ -22,18 +24,33 @@ class Proof
 	 * Encode a Token instance into a JWT.
 	 *
 	 * @param Token $token
+	 * @param string|null $kid Key ID to include in header
 	 * @throws TokenEncodingException
 	 * @return string
 	 */
-	public function encode(Token $token): string
+	public function encode(Token $token, ?string $kid = null): string
 	{
-		$header = \json_encode(
-			[
-				"algo" => $this->signer->getAlgorithm(),
-				"typ" => "JWT"
-			]
-		);
+		if( $kid ) {
+			$signer = $this->getSignerByKeyId($kid);
 
+			if( empty($signer) ){
+				throw new SignerNotFoundException("No signer found for key ID.");
+			}
+		}
+		else {
+			$signer = $this->signer;
+		}
+
+		$header = [
+			"algo" => $signer->getAlgorithm(),
+			"typ" => "JWT"
+		];
+
+		if( $kid ) {
+			$header["kid"] = $kid;
+		}
+
+		$header = \json_encode($header);
 		$payload = \json_encode($token);
 
 		if( $header === false || $payload === false ){
@@ -45,7 +62,7 @@ class Proof
 				$this->base64UrlEncode($payload);
 
 		// Compute the signature of the header and the payload.
-		$signature = $this->signer->sign($jwt);
+		$signature = $signer->sign($jwt);
 
 		return $jwt . "." . $this->base64UrlEncode($signature);
 	}
@@ -70,7 +87,24 @@ class Proof
 
 		[$header, $payload, $signature] = $parts;
 
-		$signature_verified = $this->signer->verify(
+		$decoded_header = \json_decode($this->base64UrlDecode($header));
+
+		if( \json_last_error() !== JSON_ERROR_NONE ){
+			throw new InvalidTokenException("Token header could not be JSON decoded.");
+		}
+
+		if( isset($decoded_header->kid) ){
+			$signer = $this->getSignerByKeyId($decoded_header->kid);
+
+			if( empty($signer) ){
+				throw new SignerNotFoundException("No signer found for decoding.");
+			}
+		}
+		else {
+			$signer = $this->signer;
+		}
+
+		$signature_verified = $signer->verify(
 			"{$header}.{$payload}",
 			$this->base64UrlDecode($signature)
 		);
@@ -101,6 +135,17 @@ class Proof
 		}
 
 		return new Token((array) $decoded_payload);
+	}
+
+	/**
+	 * Get a SignerInterface instance by its Key ID (kid) from the key map.
+	 *
+	 * @param string $kid
+	 * @return SignerInterface|null
+	 */
+	private function getSignerByKeyId(string $kid): ?SignerInterface
+	{
+		return $this->keyMap[$kid] ?? null;
 	}
 
 	/**

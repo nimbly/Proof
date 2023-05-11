@@ -193,6 +193,28 @@ Separating private and public keys is especially useful in a distributed or micr
 
 When creating a key pair, remember that your **private key** should be considered *highly* sensitive data and, as such, should not be persisted in a code repository (public or private) or deployed within your application. If an unauthorized 3rd party is able to gain access to your private key, they will be able to create their own tokens which could lead to leakage of sensitive data of your users and systems. If you suspect your private key has been leaked, generate a new key pair immediately.
 
+### Supporting multiple keys
+
+JWT allows a `kid` (short for Key ID) claim/property in the header to include a key ID. This key ID should map to a single unique signing key. `Proof` supports multiple signing keys via the `keyMap` property in the constructor: you provide a key/value pair array of strings to instances of `SignerInterface`.
+
+For JWTs that need to be decoded, `Proof` will check the header for a `kid` property and, if it exists, will pull the matching `SignerInterface` instance from the `keyMap`. If no match was found, a `SignerNotFoundException` is thrown. If the header does not include a `kid` property, the default signer will be used to decode.
+
+For encoding new JWTs, you can pass in an optional `kid` parameter into the `encode` method. The value of the `kid` **must** exist in the key map and will be used to sign the token. If no match was found, a `SignerNotFoundException` is thrown.
+
+If you do not pass in a `kid` parameter, the encoding will done with the default signer.
+
+```php
+$proof = new Proof(
+    signer: $signer,
+    keyMap: [
+        "1234" => $signer,
+        "5678" => $signer2
+    ]
+);
+
+$proof->encode($token, "5678");
+```
+
 ### Custom signers
 
 If you would like to implement your own custom signing solution, a `Nimbly\Proof\SignerInterface` is provided and can be passed into the `Proof` constructor.

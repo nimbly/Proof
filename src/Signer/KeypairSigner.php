@@ -21,8 +21,8 @@ class KeypairSigner implements SignerInterface
 
 	/**
 	 * @param string $algorithm Algorithm to use when signing: SHA256, SHA384, SHA512
-	 * @param OpenSSLAsymmetricKey|null $private_key Private key instance
-	 * @param OpenSSLAsymmetricKey|null $public_key Public key instance
+	 * @param OpenSSLAsymmetricKey|null $private_key Private key instance, only required if generating and signing tokens
+	 * @param OpenSSLAsymmetricKey|null $public_key Public key instance, only required if verifying signed tokens
 	 */
 	public function __construct(
 		protected string $algorithm,

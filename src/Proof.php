@@ -25,6 +25,7 @@ class Proof
 	 *
 	 * @param Token $token
 	 * @param string|null $kid Key ID to include in header
+	 * @throws SignerNotFoundException
 	 * @throws TokenEncodingException
 	 * @return string
 	 */
@@ -72,6 +73,7 @@ class Proof
 	 *
 	 * @param string $jwt
 	 * @throws InvalidTokenException
+	 * @throws SignerNotFoundException
 	 * @throws SignatureMismatchException
 	 * @throws ExpiredTokenException
 	 * @throws TokenNotReadyException

@@ -23,6 +23,7 @@ interface SignerInterface
 	 * Sign a message.
 	 *
 	 * @param string $message
+	 * @throws SigningException An error occured when signing the token.
 	 * @return string
 	 */
 	public function sign(string $message): string;
@@ -32,6 +33,7 @@ interface SignerInterface
 	 *
 	 * @param string $message
 	 * @param string $signature
+	 * @throws SigningException An error occured verifying the token signature.
 	 * @return boolean
 	 */
 	public function verify(string $message, string $signature): bool;

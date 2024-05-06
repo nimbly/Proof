@@ -24,6 +24,7 @@ class HmacSigner implements SignerInterface
 	/**
 	 * @param string $algorithm The algorithm to use for signing messages. Can be SHA256, SHA384, or SHA512.
 	 * @param string $key The shared key to use for signing.
+	 * @throws SigningException
 	 */
 	public function __construct(
 		protected string $algorithm,

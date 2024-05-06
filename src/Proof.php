@@ -31,7 +31,7 @@ class Proof
 	 */
 	public function encode(Token $token, ?string $kid = null): string
 	{
-		if( $kid ) {
+		if( $kid !== null ) {
 			$signer = $this->getSignerByKeyId($kid);
 
 			if( empty($signer) ){
@@ -47,7 +47,7 @@ class Proof
 			"typ" => "JWT"
 		];
 
-		if( $kid ) {
+		if( $kid !== null ) {
 			$header["kid"] = $kid;
 		}
 

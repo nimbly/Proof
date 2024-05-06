@@ -33,7 +33,7 @@ class ValidateJwtMiddleware implements MiddlewareInterface
 	{
 		$bearer_token = $this->getBearerToken($request->getHeaderLine($this->header), $this->scheme);
 
-		if( $bearer_token ){
+		if( $bearer_token !== null ){
 			$request = $request->withAttribute(
 				Token::class,
 				$this->proof->decode($bearer_token)
@@ -56,7 +56,7 @@ class ValidateJwtMiddleware implements MiddlewareInterface
 
 		$pattern = \sprintf(
 			"/^%s(%s\.%s\.%s)$/i",
-			$scheme ? ($scheme . " ") : "",
+			$scheme !== null ? ($scheme . " ") : "",
 			$b64encoded,
 			$b64encoded,
 			$b64encoded

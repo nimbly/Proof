@@ -40,7 +40,7 @@ jobs:
 
     - uses: codecov/codecov-action@v4
       env:
-        CODEDOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       with:
         files: ./build/logs/clover.xml
         #flags: unittests # optional

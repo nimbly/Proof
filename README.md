@@ -15,7 +15,7 @@ A simple library capable of encoding, decoding, and validating signed JWTs.
 ## Installing
 
 ```bash
-composer install nimbly/proof
+composer require nimbly/proof
 ```
 
 ## Usage overview
@@ -178,7 +178,7 @@ $keypairSigner = new KeypairSigner(
 If you don't already have one, you can create a key pair using `openssl` found on most Linux systems.
 
 ```bash
-openssl genrsa -des3 -out private.pem 2048
+openssl genrsa -out private.pem 2048
 ```
 
 Using the private key file that was just created (`private.pem`), output a public key.
@@ -201,7 +201,7 @@ For JWTs that need to be decoded, `Proof` will check the header for a `kid` prop
 
 For encoding new JWTs, you can pass in an optional `kid` parameter into the `encode` method. The value of the `kid` **must** exist in the key map and will be used to sign the token. If no match was found, a `SignerNotFoundException` is thrown.
 
-If you do not pass in a `kid` parameter, the encoding will done with the default signer.
+If you do not pass in a `kid` parameter, the encoding will be done with the default signer.
 
 ```php
 $proof = new Proof(
@@ -217,7 +217,7 @@ $proof->encode($token, "5678");
 
 ### Custom signers
 
-If you would like to implement your own custom signing solution, a `Nimbly\Proof\SignerInterface` is provided and can be passed into the `Proof` constructor.
+If you would like to implement your own custom signing solution, a `Nimbly\Proof\SignerInterface` is provided. Simply implement this interface with your own solution and pass into the `Proof` constructor.
 
 ## PSR-15 Middleware
 

@@ -1,6 +1,7 @@
 {
     "name": "nimbly/proof",
     "description": "A simple library capable of encoding, decoding, and validating signed JWTs.",
+	"keywords": ["php", "jwt", "api", "token"],
     "type": "library",
     "license": "MIT",
     "authors": [
@@ -13,7 +14,7 @@
 		"php": "^8.0",
 		"ext-openssl": "*",
         "paragonie/hidden-string": "^2.0",
-        "psr/http-message": "^1.0",
+        "psr/http-message": "^1.0|^2.0",
         "psr/http-server-middleware": "^1.0"
 	},
 	"autoload": {

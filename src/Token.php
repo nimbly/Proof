@@ -9,7 +9,7 @@ class Token implements JsonSerializable
 	/**
 	 * Token constructor.
 	 *
-	 * @param array<string,mixed> $claims JWT claims for token.
+	 * @param array<array-key,mixed> $claims JWT claims for token.
 	 */
 	public function __construct(protected array $claims = [])
 	{
@@ -52,7 +52,7 @@ class Token implements JsonSerializable
 	/**
 	 * Get all claims as an array.
 	 *
-	 * @return array<string,mixed>
+	 * @return array<array-key,mixed>
 	 */
 	public function toArray(): array
 	{

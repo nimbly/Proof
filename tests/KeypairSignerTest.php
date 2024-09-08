@@ -16,7 +16,7 @@ class KeypairSignerTest extends TestCase
 
 		$keypairSigner = new KeypairSigner(
 			"SHA128",
-			\openssl_get_privatekey(\file_get_contents(__DIR__ . "/private.pem"))
+			\openssl_get_privatekey(\file_get_contents(__DIR__ . "/keys/private.pem"))
 		);
 	}
 
@@ -24,7 +24,7 @@ class KeypairSignerTest extends TestCase
 	{
 		$keypairSigner = new KeypairSigner(
 			Proof::ALGO_SHA256,
-			\openssl_get_privatekey(\file_get_contents(__DIR__ . "/private.pem"))
+			\openssl_get_privatekey(\file_get_contents(__DIR__ . "/keys/private.pem"))
 		);
 
 		$this->assertEquals(
@@ -37,7 +37,7 @@ class KeypairSignerTest extends TestCase
 	{
 		$keypairSigner = new KeypairSigner(
 			Proof::ALGO_SHA384,
-			\openssl_get_privatekey(\file_get_contents(__DIR__ . "/private.pem"))
+			\openssl_get_privatekey(\file_get_contents(__DIR__ . "/keys/private.pem"))
 		);
 
 		$this->assertEquals(
@@ -50,7 +50,7 @@ class KeypairSignerTest extends TestCase
 	{
 		$keypairSigner = new KeypairSigner(
 			Proof::ALGO_SHA512,
-			\openssl_get_privatekey(\file_get_contents(__DIR__ . "/private.pem"))
+			\openssl_get_privatekey(\file_get_contents(__DIR__ . "/keys/private.pem"))
 		);
 
 		$this->assertEquals(
@@ -63,8 +63,8 @@ class KeypairSignerTest extends TestCase
 	{
 		$keypairSigner = new KeypairSigner(
 			Proof::ALGO_SHA256,
-			\openssl_get_publickey(\file_get_contents(__DIR__ . "/public.pem")),
-			\openssl_get_privatekey(\file_get_contents(__DIR__ . "/private.pem"))
+			\openssl_get_publickey(\file_get_contents(__DIR__ . "/keys/public.pem")),
+			\openssl_get_privatekey(\file_get_contents(__DIR__ . "/keys/private.pem"))
 		);
 
 		$message = "Message";
@@ -76,11 +76,51 @@ class KeypairSignerTest extends TestCase
 		);
 	}
 
+	public function test_verify_returns_false_with_different_key(): void
+	{
+		$keypairSigner = new KeypairSigner(
+			Proof::ALGO_SHA256,
+			\openssl_get_publickey(\file_get_contents(__DIR__ . "/keys/public.pem")),
+			\openssl_get_privatekey(\file_get_contents(__DIR__ . "/keys/private.pem"))
+		);
+
+		$message = "Message";
+
+		$signature = $keypairSigner->sign($message);
+
+		$keypairSigner = new KeypairSigner(
+			Proof::ALGO_SHA256,
+			\openssl_get_publickey(\file_get_contents(__DIR__ . "/keys/public2.pem")),
+			\openssl_get_privatekey(\file_get_contents(__DIR__ . "/keys/private2.pem"))
+		);
+
+		$this->assertFalse(
+			$keypairSigner->verify($message, $signature)
+		);
+	}
+
+	public function test_verify_returns_false_with_tampered_message(): void
+	{
+		$keypairSigner = new KeypairSigner(
+			Proof::ALGO_SHA256,
+			\openssl_get_publickey(\file_get_contents(__DIR__ . "/keys/public.pem")),
+			\openssl_get_privatekey(\file_get_contents(__DIR__ . "/keys/private.pem"))
+		);
+
+		$message = "Message";
+
+		$signature = $keypairSigner->sign($message);
+
+		$this->assertFalse(
+			$keypairSigner->verify("Some other message", $signature)
+		);
+	}
+
 	public function test_is_algorithm_supported_returns_true_for_supported_algorithms(): void
 	{
 		$keypairSigner = new KeypairSigner(
 			Proof::ALGO_SHA256,
-			\openssl_get_publickey(\file_get_contents(__DIR__ . "/public.pem"))
+			\openssl_get_publickey(\file_get_contents(__DIR__ . "/keys/public.pem"))
 		);
 
 		$this->assertTrue(
@@ -100,7 +140,7 @@ class KeypairSignerTest extends TestCase
 	{
 		$keypairSigner = new KeypairSigner(
 			Proof::ALGO_SHA256,
-			\openssl_get_publickey(\file_get_contents(__DIR__ . "/public.pem"))
+			\openssl_get_publickey(\file_get_contents(__DIR__ . "/keys/public.pem"))
 		);
 
 		$this->assertFalse(
@@ -112,7 +152,7 @@ class KeypairSignerTest extends TestCase
 	{
 		$keypairSigner = new KeypairSigner(
 			Proof::ALGO_SHA256,
-			\openssl_get_publickey(\file_get_contents(__DIR__ . "/public.pem"))
+			\openssl_get_publickey(\file_get_contents(__DIR__ . "/keys/public.pem"))
 		);
 
 		$this->expectException(SigningException::class);

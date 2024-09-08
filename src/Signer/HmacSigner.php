@@ -72,6 +72,9 @@ class HmacSigner implements SignerInterface
 	 */
 	public function verify(string $message, string $signature): bool
 	{
-		return $this->sign($message) === $signature;
+		return \hash_equals(
+			$this->sign($message),
+			$signature
+		);
 	}
 }

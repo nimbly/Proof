@@ -94,7 +94,7 @@ class ProofTest extends TestCase
 		);
 
 		$token = new Token([
-			"sub" => \fopen(__DIR__ . "/public.pem", "r")
+			"sub" => \fopen(__DIR__ . "/keys/public.pem", "r")
 		]);
 
 		$this->expectException(TokenEncodingException::class);

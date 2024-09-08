@@ -89,6 +89,7 @@ class Proof
 
 		[$header, $payload, $signature] = $parts;
 
+		/** @var object{algo:string,typ:string,kid:mixed} $decoded_header */
 		$decoded_header = \json_decode($this->base64UrlDecode($header));
 
 		if( \json_last_error() !== JSON_ERROR_NONE ){
@@ -96,7 +97,7 @@ class Proof
 		}
 
 		if( isset($decoded_header->kid) ){
-			$signer = $this->getSignerByKeyId($decoded_header->kid);
+			$signer = $this->getSignerByKeyId((string) $decoded_header->kid);
 
 			if( empty($signer) ){
 				throw new SignerNotFoundException("No signer found for decoding.");

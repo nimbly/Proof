@@ -123,4 +123,41 @@ class HmacSignerTest extends TestCase
 			$hmacSigner->verify($message, $signature)
 		);
 	}
+
+	public function test_verify_returns_false_with_different_key(): void
+	{
+		$hmacSigner = new HmacSigner(
+			Proof::ALGO_SHA256,
+			"supersecretkey"
+		);
+
+		$message = "Message";
+
+		$signature = $hmacSigner->sign($message);
+
+		$hmacSigner = new HmacSigner(
+			Proof::ALGO_SHA256,
+			"bologne1"
+		);
+
+		$this->assertFalse(
+			$hmacSigner->verify($message, $signature)
+		);
+	}
+
+	public function test_verify_returns_false_with_tampered_message(): void
+	{
+		$hmacSigner = new HmacSigner(
+			Proof::ALGO_SHA256,
+			"supersecretkey"
+		);
+
+		$message = "Message";
+
+		$signature = $hmacSigner->sign($message);
+
+		$this->assertFalse(
+			$hmacSigner->verify("Tampered message", $signature)
+		);
+	}
 }

@@ -92,7 +92,7 @@ class KeypairSigner implements SignerInterface
 			$this->algorithm
 		);
 
-		if( $status < 0 ){
+		if( $status === false || $status < 0 ){
 			throw new SigningException("An error occured when trying to verify signature of message.");
 		}
 

@@ -178,6 +178,23 @@ class ProofTest extends TestCase
 		$proof->decode($jwt);
 	}
 
+	public function test_invalid_exp_claim_throws_invalid_token_exception(): void
+	{
+		$token = new Token([
+			"exp" => (string) \date("c")
+		]);
+
+		$proof = new Proof(
+			new HmacSigner(Proof::ALGO_SHA256, "supersecret")
+		);
+
+		$jwt = $proof->encode($token);
+
+		$this->expectException(InvalidTokenException::class);
+
+		$proof->decode($jwt);
+	}
+
 	public function test_expired_token_throws_expired_token_exception(): void
 	{
 		$token = new Token([
@@ -191,6 +208,23 @@ class ProofTest extends TestCase
 		$jwt = $proof->encode($token);
 
 		$this->expectException(ExpiredTokenException::class);
+
+		$proof->decode($jwt);
+	}
+
+	public function test_invalid_nbf_claim_throws_invalid_token_exception(): void
+	{
+		$token = new Token([
+			"nbf" => \date("c")
+		]);
+
+		$proof = new Proof(
+			new HmacSigner(Proof::ALGO_SHA256, "supersecret")
+		);
+
+		$jwt = $proof->encode($token);
+
+		$this->expectException(InvalidTokenException::class);
 
 		$proof->decode($jwt);
 	}

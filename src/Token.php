@@ -7,9 +7,13 @@ use JsonSerializable;
 class Token implements JsonSerializable
 {
 	/**
-	 * Token constructor.
+	 * @param array<array-key,mixed> $claims Array of key/value pairs of JWT claims for token.
 	 *
-	 * @param array<array-key,mixed> $claims JWT claims for token.
+	 * For timestamp based public claims, be sure to use a Unix timestamp.
+	 *
+	 * * `exp` expiration date, in Unix timestamp format
+	 * * `nbf` token not valid before before given date, in Unix timestamp format
+	 * * `iat` date token issued at, in Unix timestamp format
 	 */
 	public function __construct(protected array $claims = [])
 	{

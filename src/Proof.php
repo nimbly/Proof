@@ -43,7 +43,7 @@ class Proof
 		}
 
 		$header = [
-			"algo" => $signer->getAlgorithm(),
+			"alg" => $signer->getAlgorithm(),
 			"typ" => "JWT"
 		];
 

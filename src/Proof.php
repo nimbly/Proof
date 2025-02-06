@@ -34,7 +34,7 @@ class Proof
 		$signer = $this->getSigner($kid);
 
 		$header = [
-			"algo" => $signer->getAlgorithm(),
+			"alg" => $signer->getAlgorithm(),
 			"typ" => "JWT"
 		];
 

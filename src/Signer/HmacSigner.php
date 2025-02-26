@@ -5,6 +5,7 @@ namespace Nimbly\Proof\Signer;
 use Nimbly\Proof\SignerInterface;
 use Nimbly\Proof\SigningException;
 use ParagonIE\HiddenString\HiddenString;
+use SensitiveParameter;
 
 class HmacSigner implements SignerInterface
 {
@@ -28,7 +29,7 @@ class HmacSigner implements SignerInterface
 	 */
 	public function __construct(
 		protected string $algorithm,
-		string $key
+		#[SensitiveParameter] string $key
 	)
 	{
 		if( \array_key_exists($algorithm, $this->supported_algorithms) === false ){

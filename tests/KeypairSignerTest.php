@@ -1,9 +1,9 @@
 <?php
 
-use PHPUnit\Framework\TestCase;
 use Nimbly\Proof\Proof;
-use Nimbly\Proof\Signer\KeypairSigner;
+use PHPUnit\Framework\TestCase;
 use Nimbly\Proof\SigningException;
+use Nimbly\Proof\Signer\KeypairSigner;
 
 /**
  * @covers Nimbly\Proof\Signer\KeypairSigner
@@ -159,6 +159,19 @@ class KeypairSignerTest extends TestCase
 		$keypairSigner->sign("Message");
 	}
 
+	public function test_signing_failure_throws_signing_exception(): void
+	{
+		$keypairSigner = new KeypairSigner(
+			Proof::ALGO_SHA256,
+			null,
+			\openssl_get_publickey(\file_get_contents(__DIR__ . "/keys/public.pem"))
+		);
+
+		$this->expectException(SigningException::class);
+
+		$keypairSigner->sign("Message");
+	}
+
 	public function test_verify_with_no_public_key_throws_signing_exception(): void
 	{
 		$keypairSigner = new KeypairSigner(
@@ -167,5 +180,17 @@ class KeypairSignerTest extends TestCase
 
 		$this->expectException(SigningException::class);
 		$keypairSigner->verify("Message", "signature");
+	}
+
+	public function test_verify_failure_throws_signing_exception(): void
+	{
+		$keypairSigner = new KeypairSigner(
+			Proof::ALGO_SHA256,
+			\openssl_get_privatekey(\file_get_contents(__DIR__ . "/keys/private.pem"))
+		);
+
+		$this->expectException(SigningException::class);
+
+		$keypairSigner->verify("Message", "Signature");
 	}
 }

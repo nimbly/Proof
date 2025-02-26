@@ -11,7 +11,7 @@ class Proof
 	/**
 	 * @param SignerInterface $signer The default signing key used for encoding and decoding tokens.
 	 * @param integer $leeway Time in seconds to add to expiration and "not-before" date calculations to account for drift. The leeway can be negative if you wish.
-	 * @param array<string,SignerInterface> $keyMap If you're using multiple different signing keys, you can map them here as key/value pairs. If no kid is present in header or no kid provided when signing, then the default signing key will be used.
+	 * @param array<string,SignerInterface> $keyMap If you're using multiple different signing keys, you can map them here as key/value pairs. If no `kid` is present in header or no `kid` provided when signing, then the default signing key will be used. If the default key should also be mapped to a key ID, be sure to add it here as well.
 	 */
 	public function __construct(
 		protected SignerInterface $signer,
@@ -23,24 +23,15 @@ class Proof
 	/**
 	 * Encode a Token instance into a JWT.
 	 *
-	 * @param Token $token
-	 * @param string|null $kid Key ID to include in header
+	 * @param Token $token Token instance with JWT claims.
+	 * @param string|null $kid Key ID to include in header. The given key ID *must* map to a key in the key map.
 	 * @throws SignerNotFoundException
 	 * @throws TokenEncodingException
 	 * @return string
 	 */
 	public function encode(Token $token, ?string $kid = null): string
 	{
-		if( $kid !== null ) {
-			$signer = $this->getSignerByKeyId($kid);
-
-			if( empty($signer) ){
-				throw new SignerNotFoundException("No signer found for key ID.");
-			}
-		}
-		else {
-			$signer = $this->signer;
-		}
+		$signer = $this->getSigner($kid);
 
 		$header = [
 			"alg" => $signer->getAlgorithm(),
@@ -71,7 +62,7 @@ class Proof
 	/**
 	 * Decode a JWT string into a Token instance.
 	 *
-	 * @param string $jwt
+	 * @param string $jwt The encoded JWT string.
 	 * @throws InvalidTokenException
 	 * @throws SignerNotFoundException
 	 * @throws SignatureMismatchException
@@ -83,29 +74,20 @@ class Proof
 	{
 		$parts = \explode(".", $jwt);
 
-		if( \count($parts) < 3 ){
+		if( \count($parts) !== 3 ){
 			throw new InvalidTokenException("Invalid number of token parts.");
 		}
 
 		[$header, $payload, $signature] = $parts;
 
-		/** @var object{algo:string,typ:string,kid:mixed} $decoded_header */
+		/** @var object{alg:string,typ:string,kid:mixed} $decoded_header */
 		$decoded_header = \json_decode($this->base64UrlDecode($header));
 
 		if( \json_last_error() !== JSON_ERROR_NONE ){
 			throw new InvalidTokenException("Token header could not be JSON decoded.");
 		}
 
-		if( isset($decoded_header->kid) ){
-			$signer = $this->getSignerByKeyId((string) $decoded_header->kid);
-
-			if( empty($signer) ){
-				throw new SignerNotFoundException("No signer found for decoding.");
-			}
-		}
-		else {
-			$signer = $this->signer;
-		}
+		$signer = $this->getSigner($decoded_header->kid ?? null);
 
 		$signature_verified = $signer->verify(
 			"{$header}.{$payload}",
@@ -127,28 +109,52 @@ class Proof
 
 		$timestamp = \time();
 
-		if( isset($decoded_payload->exp) &&
-			$decoded_payload->exp < ($timestamp + $this->leeway) ){
-			throw new ExpiredTokenException("The token has expired.");
+		if( isset($decoded_payload->exp) ){
+
+			if( !\is_int($decoded_payload->exp) ){
+				throw new InvalidTokenException("Expiration (exp) claim is not correctly formatted.");
+			}
+
+			if( $decoded_payload->exp < ($timestamp + $this->leeway) ){
+				throw new ExpiredTokenException("The token has expired.");
+			}
 		}
 
-		if( isset($decoded_payload->nbf) &&
-			$decoded_payload->nbf > ($timestamp - $this->leeway) ){
-			throw new TokenNotReadyException("The token is not ready to be accepted yet.");
+		if( isset($decoded_payload->nbf) ){
+
+			if( !\is_int($decoded_payload->nbf) ){
+				throw new InvalidTokenException("Not before (nbf) claim is not correctly formatted.");
+			}
+
+			if( $decoded_payload->nbf > ($timestamp - $this->leeway) ){
+				throw new TokenNotReadyException("The token is not ready to be accepted yet.");
+			}
 		}
 
 		return new Token((array) $decoded_payload);
 	}
 
 	/**
-	 * Get a SignerInterface instance by its Key ID (kid) from the key map.
+	 * Get the SignerInterface instance to use.
 	 *
-	 * @param string $kid
-	 * @return SignerInterface|null
+	 * @param string|null $kid Get a specific signer by its key from the KeyMap as defined in the constructor. If null, default signer will be returned.
+	 * @throws SignerNotFoundException
+	 * @return SignerInterface
 	 */
-	private function getSignerByKeyId(string $kid): ?SignerInterface
+	private function getSigner(?string $kid = null): SignerInterface
 	{
-		return $this->keyMap[$kid] ?? null;
+		if( $kid !== null ) {
+			if( !isset($this->keyMap[$kid]) ){
+				throw new SignerNotFoundException("No signer found for key ID.");
+			}
+
+			$signer = $this->keyMap[$kid];
+		}
+		else {
+			$signer = $this->signer;
+		}
+
+		return $signer;
 	}
 
 	/**

@@ -76,6 +76,7 @@ $token = new Token([
     "iss" => "customer-data-service",
     "sub" => $user->id,
     "custom_claim_foo" => "bar",
+	"iat" => \time(),
     "exp" => \strtotime("+1 hour")
 ])
 ```
@@ -85,6 +86,19 @@ Or you can set a claim on a `Token` by calling the `setClaim` method.
 ```php
 $token->setClaim("nbf", \strtotime("+1 week"));
 ```
+
+**NOTE:** The `exp` and `nbf` public claims that represent a timestamp *must* be formatted as a `NumericDate` (an integer Unix timestamp.) `Proof` will automatically attempt to validate the token against the given expiration claim (exp) and, if present, the not before claim (nbf). As such, it expects those values to be integers.
+
+Please see the official [RFC](https://datatracker.ietf.org/doc/html/rfc7519#section-2), specifcally the definition of **NumericDate**.
+
+> A JSON numeric value representing the number of seconds from
+	1970-01-01T00:00:00Z UTC until the specified UTC date/time,
+	ignoring leap seconds.  This is equivalent to the IEEE Std 1003.1,
+	2013 Edition [POSIX.1] definition "Seconds Since the Epoch", in
+	which each day is accounted for by exactly 86400 seconds, other
+	than that non-integer values can be represented.  See RFC 3339
+	[RFC3339] for details regarding date/times in general and UTC in
+	particular.
 
 ### Encode a Token into a JWT
 
@@ -228,7 +242,8 @@ If the JWT is invalid, an exception will be thrown. This exception will need to 
 * `InvalidTokenException` is thrown if the JWT cannot be decoded due to being malformed or containing invalid JSON.
 * `SignatureMismatchException` is thrown if the signature does not match.
 * `ExpiredTokenException` is thrown if the token's `exp` claim is expired.
-* `TokenNotReadyException` is thrown if the token's `nbf` claim is not ready (i.e. the timestamp is still in the future.).
+* `TokenNotReadyException` is thrown if the token's `nbf` claim is not ready (i.e. the timestamp is still in the future.)
+* `SignerNotFoundException` is thrown if a `kid` (key ID) was passed in the JWT header that does not exist in the key map.
 
 The middleware defaults to looking for the JWT in the `Authorization` HTTP header with a `Bearer` scheme. For example:
 

@@ -80,7 +80,7 @@ class Proof
 
 		[$header, $payload, $signature] = $parts;
 
-		/** @var object{algo:string,typ:string,kid:mixed} $decoded_header */
+		/** @var object{alg:string,typ:string,kid:mixed} $decoded_header */
 		$decoded_header = \json_decode($this->base64UrlDecode($header));
 
 		if( \json_last_error() !== JSON_ERROR_NONE ){

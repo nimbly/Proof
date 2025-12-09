@@ -6,14 +6,13 @@ use Nimbly\Proof\Middleware\ValidateJwtMiddleware;
 use Nimbly\Proof\Proof;
 use Nimbly\Proof\Signer\HmacSigner;
 use Nimbly\Proof\Token;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-/**
- * @covers Nimbly\Proof\Middleware\ValidateJwtMiddleware
- */
+#[CoversClass(ValidateJwtMiddleware::class)]
 class ValidateJwtMiddlewareTest extends TestCase
 {
 	public function test_get_bearer_token_returns_token_string(): void

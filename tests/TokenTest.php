@@ -2,10 +2,9 @@
 
 use PHPUnit\Framework\TestCase;
 use Nimbly\Proof\Token;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * @covers Nimbly\Proof\Token
- */
+#[CoversClass(Token::class)]
 class TokenTest extends TestCase
 {
 	public function test_constructor_sets_claims(): void

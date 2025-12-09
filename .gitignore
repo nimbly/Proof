@@ -1,5 +1,6 @@
 build/
 vendor/
 .vscode/
+.phpunit.cache/
 composer.lock
 .phpunit.result.cache

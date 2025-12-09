@@ -10,10 +10,9 @@ use Nimbly\Proof\SignerNotFoundException;
 use Nimbly\Proof\Token;
 use Nimbly\Proof\TokenEncodingException;
 use Nimbly\Proof\TokenNotReadyException;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * @covers Nimbly\Proof\Proof
- */
+#[CoversClass(Proof::class)]
 class ProofTest extends TestCase
 {
 	public function test_default_leeway_value(): void

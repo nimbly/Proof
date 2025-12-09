@@ -3,11 +3,10 @@
 use Nimbly\Proof\Proof;
 use Nimbly\Proof\Signer\HmacSigner;
 use Nimbly\Proof\SigningException;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
-/**
- * @covers Nimbly\Proof\Signer\HmacSigner
- */
+#[CoversClass(HmacSigner::class)]
 class HmacSignerTest extends TestCase
 {
 	public function test_constructor_throws_exception_if_alogrithm_is_not_supported(): void

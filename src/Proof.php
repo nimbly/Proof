@@ -7,6 +7,7 @@ class Proof
 	const ALGO_SHA256 = "SHA256";
 	const ALGO_SHA384 = "SHA384";
 	const ALGO_SHA512 = "SHA512";
+	const ALGO_EDDSA = "Ed25519";
 
 	/**
 	 * @param SignerInterface $signer The default signing key used for encoding and decoding tokens.
@@ -21,13 +22,13 @@ class Proof
 	}
 
 	/**
-	 * Encode a Token instance into a JWT.
+	 * Encode a Token instance into a signed JWT.
 	 *
 	 * @param Token $token Token instance with JWT claims.
 	 * @param string|null $kid Key ID to include in header. The given key ID *must* map to a key in the key map.
 	 * @throws SignerNotFoundException
 	 * @throws TokenEncodingException
-	 * @return string
+	 * @return string Returns a signed JWT as a string.
 	 */
 	public function encode(Token $token, ?string $kid = null): string
 	{
@@ -50,25 +51,32 @@ class Proof
 		}
 
 		// Build the header and payload portion of the JWT.
-		$jwt = $this->base64UrlEncode($header) . "." .
-				$this->base64UrlEncode($payload);
+		$jwt = \sprintf(
+			"%s.%s",
+			$this->base64UrlEncode($header),
+			$this->base64UrlEncode($payload)
+		);
 
 		// Compute the signature of the header and the payload.
 		$signature = $signer->sign($jwt);
 
-		return $jwt . "." . $this->base64UrlEncode($signature);
+		return \sprintf(
+			"%s.%s",
+			$jwt,
+			$this->base64UrlEncode($signature)
+		);
 	}
 
 	/**
-	 * Decode a JWT string into a Token instance.
+	 * Decode a signed JWT string into a Token instance.
 	 *
-	 * @param string $jwt The encoded JWT string.
+	 * @param string $jwt A signed JWT string.
 	 * @throws InvalidTokenException
 	 * @throws SignerNotFoundException
 	 * @throws SignatureMismatchException
 	 * @throws ExpiredTokenException
 	 * @throws TokenNotReadyException
-	 * @return Token
+	 * @return Token A Token instance with all claims from the JWT payload loaded into it.
 	 */
 	public function decode(string $jwt): Token
 	{

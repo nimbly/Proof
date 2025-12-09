@@ -4,10 +4,9 @@ use Nimbly\Proof\Proof;
 use PHPUnit\Framework\TestCase;
 use Nimbly\Proof\SigningException;
 use Nimbly\Proof\Signer\KeypairSigner;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * @covers Nimbly\Proof\Signer\KeypairSigner
- */
+#[CoversClass(KeypairSigner::class)]
 class KeypairSignerTest extends TestCase
 {
 	public function test_constructor_throws_exception_if_alogrithm_is_not_supported(): void

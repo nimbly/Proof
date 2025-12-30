@@ -10,8 +10,8 @@ use SodiumException;
 class SodiumSigner implements SignerInterface
 {
 	public function __construct(
-		#[SensitiveParameter] private ?string $secret_key = null,
-		#[SensitiveParameter] private ?string $public_key = null,
+		protected ?string $public_key = null,
+		#[SensitiveParameter] protected ?string $secret_key = null,
 	)
 	{
 	}

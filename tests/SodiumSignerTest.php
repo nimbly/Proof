@@ -49,7 +49,9 @@ class SodiumSignerTest extends TestCase
 		$keypair = \sodium_crypto_sign_keypair();
 		$secret_key = \sodium_crypto_sign_secretkey($keypair);
 
-		$signer = new SodiumSigner($secret_key);
+		$signer = new SodiumSigner(
+			secret_key: $secret_key
+		);
 
 		$signature = $signer->sign("My message");
 		$this->assertNotEmpty($signature);
@@ -57,7 +59,9 @@ class SodiumSignerTest extends TestCase
 
 	public function test_sign_throws_signing_exception_if_invalid_secret_key(): void
 	{
-		$signer = new SodiumSigner("not_a_secret_key");
+		$signer = new SodiumSigner(
+			secret_key: "not_a_secret_key"
+		);
 
 		$this->expectException(SigningException::class);
 		$signer->sign("Message");

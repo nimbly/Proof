@@ -207,6 +207,35 @@ Separating private and public keys is especially useful in a distributed or micr
 
 When creating a key pair, remember that your **private key** should be considered *highly* sensitive data and, as such, should not be persisted in a code repository (public or private) or deployed within your application. If an unauthorized 3rd party is able to gain access to your private key, they will be able to create their own tokens which could lead to leakage of sensitive data of your users and systems. If you suspect your private key has been leaked, generate a new key pair immediately.
 
+### Sodium
+
+The `SodiumSigner` uses `libsodium` to sign and verify messages. This extension should come bundled with PHP since version 7.2. You will need to generate an `Ed25519` signing key pair. Just like all key pairs, the private or secret key is used to sign your messages. The public key is used to verify message signatures.
+
+For example:
+
+```php
+$sodiumSigner = new SodiumSigner(
+    $secretsManager->getSecret("public_key"),
+    $secretsManager->getSecret("private_key")
+);
+```
+
+#### Generating a keypair
+
+You can generate a Sodium keypair directly within PHP:
+
+```php
+$keypair = \sodium_crypto_sign_keypair();
+
+$secret_key = \sodium_crypto_sign_secretkey($keypair);
+$public_key = \sodium_crypto_sign_publickey($keypair);
+
+\file_put_contents("secret.key", $secret_key);
+\file_put_contents("public.key", $public_key);
+```
+
+When creating a key pair, remember that your **secret key** should be considered *highly* sensitive data and, as such, should not be persisted in a code repository (public or private) or deployed within your application. If an unauthorized 3rd party is able to gain access to your secret key, they will be able to create their own tokens which could lead to leakage of sensitive data of your users and systems. If you suspect your secret key has been leaked, generate a new key pair immediately.
+
 ### Supporting multiple keys
 
 JWT allows a `kid` (short for Key ID) claim/property in the header to include a key ID. This key ID should map to a single unique signing key. `Proof` supports multiple signing keys via the `keyMap` property in the constructor: you provide a key/value pair array of strings to instances of `SignerInterface`.
